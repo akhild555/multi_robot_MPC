@@ -78,14 +78,5 @@ if __name__ == '__main__':
 
   x, u, t = simulate_quadrotor(x0, tf, quadrotor)
   plot_x_and_u(x, u, t, "MPC")
-  x, u, t = simulate_quadrotor(x0, tf, quadrotor, False)
-  plot_x_and_u(x, u, t, "LQR")
-  x, u, t = simulate_quadrotor(x0, tf, quadrotor, True, True, False)
-
-  # Initial state to remain in the 1-sublevel of V
-  plot_x_and_u(x, u, t, "MPC using CLF")
-  x0 = np.array([0.5, 0.5, 0, 0, 0, 0])
-  x, u, t = simulate_quadrotor(x0, tf, quadrotor, False, False, True)
-  plot_x_and_u(x, u, t, "CLF QP-version")
 
   plt.show()
