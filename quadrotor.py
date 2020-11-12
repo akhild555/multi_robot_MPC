@@ -131,7 +131,7 @@ class Quadrotor(object):
     prog.AddQuadraticCost(expr)
     pass
 
-  def compute_mpc_feedback(self, x_current, use_clf=False):
+  def compute_mpc_feedback(self, x_current):
     '''
     This function computes the MPC controller input u
     '''
@@ -160,15 +160,9 @@ class Quadrotor(object):
     
     # Adds the stability constraint: V(x_T) <= V(x_0) if using 
     # the clf version of MPC
-    if (use_clf) :
-      self.add_mpc_clf_constraint(prog, x, N)
 
     # Solve the QP
     solver = OsqpSolver()
-    if (use_clf) :
-      # Because we've added the CLF constraint here,
-      # this problem becomes a non-linear program
-      solver = SnoptSolver()
     result = solver.Solve(prog)
 
     u_mpc = np.zeros(2)
