@@ -4,7 +4,7 @@ from scipy.integrate import solve_ivp
 from quadrotor import Quadrotor
 import matplotlib.pyplot as plt
 
-def simulate_quadrotor(x0, tf, quadrotor, use_mpc=True, use_mpc_with_clf=False, use_clf_qp=False):
+def simulate_quadrotor(x0, tf, quadrotor):
   # Simulates a stabilized maneuver on the 2D quadrotor
   # system, with an initial value of x0
   t0 = 0.0
@@ -21,8 +21,7 @@ def simulate_quadrotor(x0, tf, quadrotor, use_mpc=True, use_mpc_with_clf=False, 
     current_x = x[-1]
     current_u_command = np.zeros(2)
 
-    if use_mpc:
-      current_u_command = quadrotor.compute_mpc_feedback(current_x, use_mpc_with_clf)
+    current_u_command = quadrotor.compute_mpc_feedback(current_x)
 
     current_u_real = np.clip(current_u_command, quadrotor.umin, quadrotor.umax)
     
