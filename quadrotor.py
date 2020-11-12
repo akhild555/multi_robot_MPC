@@ -18,7 +18,6 @@ import pydrake.symbolic as sym
 
 from pydrake.all import MonomialBasis, OddDegreeMonomialBasis, Variables
 
-
 class Quadrotor(object):
   def __init__(self, Q, R, Qf):
     self.g = 9.81
@@ -36,15 +35,6 @@ class Quadrotor(object):
     self.n_x = 6
     self.n_u = 2
     self.S = np.zeros((6, 6))
-
-    try:
-      self.S = np.load('S_sol.npy')
-      # For the SOS problem in this homework, we maximized the rho level-set 
-      # where rho = 1
-      self.rho = 1.0
-    except:
-      print("Warning: S_sol.npy does not exist. CLF-based controllers (Problem 3) will not work")    
-      print("To generate S_sol.npy, please complete Problem 2 and run stability_analysis.py")
 
     # Set use_experimental_inputs to True to test the CLF QP boundary controller
     # Only works after Problem 3.2.b and 3.3.b are completed
@@ -141,21 +131,6 @@ class Quadrotor(object):
     prog.AddQuadraticCost(expr)
     pass
 
-  def add_mpc_clf_constraint(self, prog, x, N):
-    '''
-    Adds the constraint V(x_t) <= V(x_0)
-    Note that this constraint is non-linear and turns this MPC problem from a 
-    quadratic program to a non-linear program
-    '''
-    if (not np.allclose(self.S, np.zeros((self.n_x, self.n_x)))):
-      # TODO: add the discrete time stability constraint within this if statement
-      V_xT = x[N-1].T @ self.S @ x[N-1]
-      V_x0 = x[0].T @ self.S @ x[0]
-      lb = -math.inf
-      ub = 0
-      prog.AddConstraint(V_xT - V_x0, lb, ub)
-      pass
-
   def compute_mpc_feedback(self, x_current, use_clf=False):
     '''
     This function computes the MPC controller input u
@@ -205,31 +180,3 @@ class Quadrotor(object):
     u_mpc = result.GetSolution(u[0]) + self.u_d()
 
     return u_mpc
-
-  def dynamics_cubic_approximation(self, x, u):
-    '''
-    Approximated Dynamics for the quadrotor.
-    We substitute
-      sin(theta) = theta - (theta**3)/6
-      cos(theta) = 1 - (theta**2)/2
-    into the full dynamics.
-    '''
-    g = self.g
-    m = self.m
-    a = self.a
-    I = self.I
-
-    theta = x[2]
-    ydot = x[3]
-    zdot = x[4]
-    thetadot = x[5]
-    u0 = u[0]
-    u1 = u[1]
-
-    xdot = np.array([ydot,
-                     zdot,
-                     thetadot,
-                     -(theta - (theta**3)/6) * (u0 + u1) / m,
-                     -g + (1 - (theta**2)/2) * (u0 + u1) / m,
-                     a * (u0 - u1) / I])
-    return xdot
