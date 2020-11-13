@@ -14,12 +14,12 @@ def sync_hw(hw_id, files, from_master_branch=True):
     from google.colab import drive
     drive.mount('/content/drive')
 
-    dir = "drive/My Drive/MEAM517_colab/hw"+str(hw_id)+"/"
+    dir = "drive/My Drive/MEAM517_Final_Project/"
     if from_master_branch:
       branch = "master"
     else: 
       branch = "hw" + str(hw_id)
-    git_url = "https://raw.githubusercontent.com/mposa/MEAM517/"+branch+"/hw"+str(hw_id)+"/"
+    git_url = "https://raw.githubusercontent.com/akhild555/multi_robot_MPC/"+branch+"/"
 
     for file in files:
       # download the file from github to google drive if it doesn't exist 
