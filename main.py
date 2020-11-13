@@ -47,7 +47,8 @@ x3 = x2 + 0.1
 anim, fig2 = create_animation(np.stack((x, x2, x3), axis=0), tf, n_agents=3)
 
 
-fig2.show()
 
+anim
+plt.show()
 # put breakpoint here
 print()

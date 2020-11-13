@@ -99,15 +99,44 @@ class Quadrotor(object):
     # Use AddBoundingBoxConstraint
     prog.AddBoundingBoxConstraint(x_current, x_current, x[0])
 
-    pass
+    # pass
 
   def add_input_saturation_constraint(self, prog, x, u, N):
     # TODO: impose input limit constraint.
     # Use AddBoundingBoxConstraint
     # The limits are available through self.umin and self.umax
-    
+    # u_min = 0, u_max = 5.5
     for i in range(N-1):
       prog.AddBoundingBoxConstraint(self.umin-self.u_d(), self.umax-self.u_d(), u[i])
+    # pass
+
+  def add_linear_velocity_constraint(self, prog, x, N):
+    # -2.5 m/s <= x_dot,y_dot <= 2.5 m/s
+    # N or N-1
+    print("x",x)
+    for i in range(N):
+      prog.AddBoundingBoxConstraint(-2.5, 2.5, x[i][3:5])
+    pass
+
+  def add_acceleration_constraint(self, prog, x, N):
+  #   # -0.25 m/s^2 <= a <= 0.25 m/s^2
+    dt = 1e-2
+    for i in range(1,N):
+      accel = (x[i][3:5]-x[i-1][3:5])/dt
+      prog.AddBoundingBoxConstraint(-0.25, 0.25, x[i][3:5])
+    pass
+
+  def add_angular_velocity_constraint(self, prog, x, N):
+    # -0.075 rad/s <= w <= 0.075 rad/s
+    # N or N-1
+    for i in range(N):
+      prog.AddBoundingBoxConstraint(-0.075, 0.075, x[i][5])
+    pass
+
+  def add_angular_acceleration_constraint(self, prog, x, N):
+  #   # -0.005 rad/s^2 <= alpha <= 0.005 rad/s^2
+    for i in range(N):
+      prog.AddBoundingBoxConstraint(-0.005, 0.005, x[i][5])
     pass
 
   def add_dynamics_constraint(self, prog, x, u, N, T):
@@ -118,7 +147,16 @@ class Quadrotor(object):
     for i in range(N-1):
       val = A @ x[i] + B @ u[i]
       prog.AddLinearEqualityConstraint(x[i+1]-val, np.zeros(len(x[i])))
-    pass
+    # pass
+
+  # def add_collision_constraint(self, x):
+  #
+  #   for i in range(x.shape[1]):
+  #     for j in range(i+1,x.shape[1]):
+  #       dist = (x[0][i] - x[1][j])**2
+  #       prog.AddConstraint(dist, D, np.inf, x )
+
+
 
   def add_cost(self, prog, x, u, N):
     # TODO: add cost.
@@ -129,7 +167,7 @@ class Quadrotor(object):
       expr += val1 + val2
     expr += x[N-1].T @ self.Qf @ x[N-1]
     prog.AddQuadraticCost(expr)
-    pass
+    # pass
 
   def compute_mpc_feedback(self, x_current):
     '''
@@ -152,6 +190,9 @@ class Quadrotor(object):
     # Add constraints and cost
     self.add_initial_state_constraint(prog, x, x_current)
     self.add_input_saturation_constraint(prog, x, u, N)
+    self.add_linear_velocity_constraint(prog, x, N)
+    self.add_acceleration_constraint(prog, x, N)
+    self.add_angular_velocity_constraint(prog, x, N)
     self.add_dynamics_constraint(prog, x, u, N, T)
     self.add_cost(prog, x, u, N)
 
