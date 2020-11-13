@@ -8,17 +8,16 @@ import urllib.request
 from pathlib import Path
 import re
 
-def sync_hw(hw_id, files, from_master_branch=True):
+def sync_hw(files, from_master_branch=True):
   if 'google.colab' in str(get_ipython()):
     # mount google drive to Colab
     from google.colab import drive
     drive.mount('/content/drive')
 
     dir = "drive/My Drive/MEAM517_Final_Project/"
-    if from_master_branch:
-      branch = "master"
-    else: 
-      branch = "hw" + str(hw_id)
+
+    branch = "master"
+
     git_url = "https://raw.githubusercontent.com/akhild555/multi_robot_MPC/"+branch+"/"
 
     for file in files:
