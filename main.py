@@ -29,22 +29,40 @@ Qf = Q;
 # End time of the simulation
 tf = 10;
 
-# Construct our quadrotor controller
-quadrotor = Quadrotor(Q, R, Qf);
-x0 = np.array([0.5, 0.5, 0, 1, 1, 0])
-x, u, t = simulate_quadrotor(x0, tf, quadrotor)
+
+# number of quadrotors
+num_quad = 4
+
+# Construct our quadrotor controllers
+quadrotor0 = Quadrotor(Q, R, Qf);
+quadrotor1 = Quadrotor(Q, R, Qf);
+quadrotor2 = Quadrotor(Q, R, Qf);
+quadrotor3 = Quadrotor(Q, R, Qf);
+quad_ctrls = [quadrotor0, quadrotor1, quadrotor2, quadrotor3]
+
+# initial states of quadrotors
+# x0 = np.array([0.5, 0.5, 0, 1, 1, 0])
+x0_0 = np.array([0.5, 0.5, 0, 1, 1, 0])
+x1_0 = np.array([0.75, 0.75, 0, 1, 1, 0])
+x2_0 = np.array([-1, 1, 0, 1, 1, 0])
+x3_0 = np.array([-2.5, 1, 0, 1, 1, 0])
+
+x0 = [x0_0, x1_0, x2_0, x3_0]
+
+# simulate quadrotors
+x, u, t = simulate_quadrotor(x0, tf, quad_ctrls, num_quad)
 import matplotlib.pyplot as plt
 
-fig1, ax1 = plt.subplots(1,1)
-ax1.scatter(u[:, 0], u[:, 1])
-fig1.show()
-print(u)
+# fig1, ax1 = plt.subplots(1,1)
+# ax1.scatter(u[:, 0], u[:, 1])
+# fig1.show()
+# print(u)
+#
+# x2 = x + 0.1
+#
+# x3 = x2 + 0.1
 
-x2 = x + 0.1
-
-x3 = x2 + 0.1
-
-anim, fig2 = create_animation(np.stack((x, x2, x3), axis=0), tf, n_agents=3)
+anim, fig2 = create_animation(np.stack((x[0], x[1], x[2], x[3]), axis=0), tf, n_agents=4)
 
 
 

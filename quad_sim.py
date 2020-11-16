@@ -4,7 +4,7 @@ from scipy.integrate import solve_ivp
 from quadrotor import Quadrotor
 import matplotlib.pyplot as plt
 
-def simulate_quadrotor(x0, tf, quadrotor):
+def simulate_quadrotor(x0, tf, quadrotor, num_quad):
   # Simulates a stabilized maneuver on the 2D quadrotor
   # system, with an initial value of x0
   t0 = 0.0
@@ -12,29 +12,43 @@ def simulate_quadrotor(x0, tf, quadrotor):
 
   dt = 1e-2
 
-  x = [x0]
-  u = [np.zeros((2,))]
+  x = []
+  u = []
+  for i in range(num_quad):
+    x.append([x0[i]])
+    u.append([np.zeros((2,))])
   t = [t0]
 
-  while np.linalg.norm(np.array(x[-1][0:2])) > 1e-3 and t[-1] < tf:
-    current_time = t[-1]
-    current_x = x[-1]
-    current_u_command = np.zeros(2)
+  eps = 1e-3
+  eps_check = True
+  while eps_check and t[-1] < tf:
 
-    current_u_command = quadrotor.compute_mpc_feedback(current_x)
+    for i in range(num_quad):
+      current_time = t[-1]
+      current_x = x[i][-1]
+      current_u_command = np.zeros(2)
 
-    current_u_real = np.clip(current_u_command, quadrotor.umin, quadrotor.umax)
-    
-    # Autonomous ODE for constant inputs to work with solve_ivp
-    def f(t, x):
-      return quadrotor.continuous_time_full_dynamics(current_x, current_u_real)
-    # Integrate one step
-    sol = solve_ivp(f, (0, dt), current_x, first_step=dt)
+      current_u_command = quadrotor[i].compute_mpc_feedback(current_x)
 
-    # Record time, state, and inputs
+      current_u_real = np.clip(current_u_command, quadrotor[i].umin, quadrotor[i].umax)
+
+      # Autonomous ODE for constant inputs to work with solve_ivp
+      def f(t, x):
+        return quadrotor[i].continuous_time_full_dynamics(current_x, current_u_real)
+      # Integrate one step
+      sol = solve_ivp(f, (0, dt), current_x, first_step=dt)
+
+      # Record state, and inputs
+      x[i].append(sol.y[:, -1])
+      u[i].append(current_u_command)
+
     t.append(t[-1] + dt)
-    x.append(sol.y[:, -1])
-    u.append(current_u_command)
+    # calculate norms for all quads
+    norms = []
+    for i in range(num_quad):
+      norm = np.linalg.norm(np.array(x[i][-1][0:2]))
+      norms.append(norm)
+    eps_check = all(i > eps for i in norms)
 
   x = np.array(x)
   u = np.array(u)
