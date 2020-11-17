@@ -9,9 +9,12 @@ from quad_sim import simulate_quadrotor
 
 # Need to reload the module to use the latest code
 import quadrotor
+import quadrotor_robber
 
 importlib.reload(quadrotor)
+importlib.reload(quadrotor_robber)
 from quadrotor import Quadrotor
+from quadrotor_robber import QuadrotorRobber
 
 """
 Load in the animation function
@@ -36,9 +39,12 @@ num_quad = 4
 # Construct our quadrotor controllers
 quadrotor0 = Quadrotor(Q, R, Qf);
 quadrotor1 = Quadrotor(Q, R, Qf);
-quadrotor2 = Quadrotor(Q, R, Qf);
-quadrotor3 = Quadrotor(Q, R, Qf);
-quad_ctrls = [quadrotor0, quadrotor1, quadrotor2, quadrotor3]
+quadrotor_robber = QuadrotorRobber(Q, R, Qf);
+# quadrotor2 = Quadrotor(Q, R, Qf);
+# quadrotor3 = Quadrotor(Q, R, Qf);
+# quad_ctrls = [quadrotor0, quadrotor1, quadrotor2, quadrotor3]
+quad_ctrls = [quadrotor0, quadrotor1]
+# quad_ctrls = [quadrotor0, quadrotor_robber]
 
 # initial states of quadrotors
 # x0 = np.array([0.5, 0.5, 0, 1, 1, 0])
@@ -47,10 +53,12 @@ x1_0 = np.array([0.75, 0.75, 0, 1, 1, 0])
 x2_0 = np.array([-1, 1, 0, 1, 1, 0])
 x3_0 = np.array([-2.5, 1, 0, 1, 1, 0])
 
-x0 = [x0_0, x1_0, x2_0, x3_0]
+# x0 = [x0_0, x1_0, x2_0, x3_0]
+x0 = [x0_0, x1_0]
 
 # simulate quadrotors
-x, u, t = simulate_quadrotor(x0, tf, quad_ctrls, num_quad)
+# x, u, t = simulate_quadrotor(x0, tf, quad_ctrls, num_quad)
+x, u, t = simulate_quadrotor(x0, tf, quad_ctrls, 2)
 import matplotlib.pyplot as plt
 
 # fig1, ax1 = plt.subplots(1,1)
@@ -62,7 +70,8 @@ import matplotlib.pyplot as plt
 #
 # x3 = x2 + 0.1
 
-anim, fig2 = create_animation(np.stack((x[0], x[1], x[2], x[3]), axis=0), tf, n_agents=4)
+# anim, fig2 = create_animation(np.stack((x[0], x[1], x[2], x[3]), axis=0), tf, n_agents=4)
+anim, fig2 = create_animation(np.stack((x[0], x[1]), axis=0), tf, n_agents=2)
 
 
 

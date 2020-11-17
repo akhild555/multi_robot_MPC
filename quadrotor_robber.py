@@ -18,7 +18,7 @@ import pydrake.symbolic as sym
 
 from pydrake.all import MonomialBasis, OddDegreeMonomialBasis, Variables
 
-class Quadrotor(object):
+class QuadrotorRobber(object):
   def __init__(self, Q, R, Qf):
     self.g = 9.81
     self.m = 1
@@ -156,13 +156,6 @@ class Quadrotor(object):
 
     # pass
 
-  # def add_collision_constraint(self, x):
-  #
-  #   for i in range(x.shape[1]):
-  #     for j in range(i+1,x.shape[1]):
-  #       dist = (x[0][i] - x[1][j])**2
-  #       prog.AddConstraint(dist, D, np.inf, x )
-
   def add_dynamics_constraint(self, prog, x, u, N, T):
     # TODO: impose dynamics constraint.
     # Use AddLinearEqualityConstraint(expr, value)
@@ -186,7 +179,30 @@ class Quadrotor(object):
   #         val2 = u[i].T @ self.R @ u[i]
   #         expr += val1 + val2
   #     expr += (x[N-1]-x_des).T @ self.Qf @ (x[N-1]-x_des)
-  #     prog.AddQuadraticCost(expr)
+  #     prog.AddQuadraticCost(-expr)
+  #     pass
+
+  # Find Closest Cop and Maximize Distance to It
+  # def add_cost(self, prog, x, x_js, x_des, u, N):
+  #     # TODO: add cost.
+  #     expr = 0
+  #     D_j = np.zeros(len(x_js))
+  #     for i in len(x_js):
+  #         # Calculate Distance Between Robber and Each Cop
+  #         D_j[i] = np.linalg.norm(x[0][0:2] - x_js[i][0:2])
+  #     # Find Index of Closest Cop
+  #     close_cop = np.argmin(D_j)
+  #     # Don't think you need Collision Avoidance Constraint
+  #     if D_j < self.D:
+  #       expr += self.w_j*(D_j - self.D)**2
+  #     # Calculate Cost Expression Over Entire Horizon, x_js will need othe waypoint info
+  #     # Or just use current distance expression as cost
+  #     for i in range(N-1):
+  #         val1 = np.linalg.norm(x[i][0:2] - x_js[i][0:2])
+  #         val2 = u[i].T @ self.R @ u[i]
+  #         expr += val1 + val2
+  #     expr += (x[N-1]-x_des).T @ self.Qf @ (x[N-1]-x_des)
+  #     prog.AddQuadraticCost(-expr)
   #     pass
 
   # HW6 Cost
@@ -198,7 +214,7 @@ class Quadrotor(object):
       val2 = u[i].T @ self.R @ u[i]
       expr += val1 + val2
     expr += x[N - 1].T @ self.Qf @ x[N - 1]
-    prog.AddQuadraticCost(expr)
+    prog.AddQuadraticCost(-expr)
 
   # def compute_mpc_feedback(self, x_current, x_js, x_des):
   def compute_mpc_feedback(self, x_current):
@@ -222,11 +238,11 @@ class Quadrotor(object):
     # Add constraints and cost
     self.add_initial_state_constraint(prog, x, x_current)
     self.add_input_saturation_constraint(prog, x, u, N)
-    self.add_linear_velocity_constraint(prog, x, N)
-    self.add_angular_velocity_constraint(prog, x, N) # Causes Overshoot
-    self.add_acceleration_constraint(prog, x, N) # Causes straight line trajectory, Overshoot w/o dt
-    self.add_angular_acceleration_constraint(prog, x, N) # Causes diverging trajectory by itself, All together straight line much slower calc time, Diverge w/o dt
-    self.add_dynamics_constraint(prog, x, u, N, T)
+    # self.add_linear_velocity_constraint(prog, x, N)
+    # self.add_angular_velocity_constraint(prog, x, N)
+    # self.add_acceleration_constraint(prog, x, N)
+    # self.add_angular_acceleration_constraint(prog, x, N)
+    # self.add_dynamics_constraint(prog, x, u, N, T)
     # self.add_cost(prog, x, x_js, x_des, u, N)
     self.add_cost(prog, x, u, N)
 
