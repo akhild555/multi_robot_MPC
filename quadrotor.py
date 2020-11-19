@@ -163,45 +163,45 @@ class Quadrotor(object):
   #       dist = (x[0][i] - x[1][j])**2
   #       prog.AddConstraint(dist, D, np.inf, x )
 
-  def add_dynamics_constraint(self, prog, x, u, N, T):
+  def add_dynamics_constraint(self, prog, x, x_des, u, N, T):
     # TODO: impose dynamics constraint.
     # Use AddLinearEqualityConstraint(expr, value)
     A, B = self.discrete_time_linearized_dynamics(T)
 
     for i in range(N-1):
-      val = A @ x[i] + B @ u[i]
-      prog.AddLinearEqualityConstraint(x[i+1]-val, np.zeros(len(x[i])))
+      val = A @ (x[i]) + B @ u[i]
+      prog.AddLinearEqualityConstraint((x[i+1])-val, np.zeros(len(x[i])))
     # pass
 
-  # def add_cost(self, prog, x, x_js, x_des, u, N):
+  # def add_cost(self, prog, x, x_current, x_js, x_des, u, N):
   #     # TODO: add cost.
   #     expr = 0
-  #     for x_j in x_js:
-  #         D_j = np.linalg.norm(x[0] - x_j)
-  #         if D_j < self.D:
-  #             expr += self.w_j*(D_j - self.D)**2
+  #     # for x_j in x_js:
+  #     #     D_j = np.linalg.norm(x_current[:2] - x_j[:2])
+  #     #     if D_j < self.D:
+  #     #         expr += self.w_j*(D_j - self.D)**2
   #
   #     for i in range(N-1):
   #         val1 = x[i].T @ self.Q @ x[i]
   #         val2 = u[i].T @ self.R @ u[i]
   #         expr += val1 + val2
-  #     expr += (x[N-1]-x_des).T @ self.Qf @ (x[N-1]-x_des)
-  #     prog.AddQuadraticCost(expr)
+  #     expr += (x[N-1]-x_des).reshape(1, 6) @ self.Qf @ (x[N-1]-x_des).reshape(6, 1)
+  #     prog.AddQuadraticCost(expr[0,0])
   #     pass
 
   # HW6 Cost
-  def add_cost(self, prog, x, u, N):
+  def add_cost(self, prog, x, x_des, u, N):
     # TODO: add cost.
     expr = 0
     for i in range(N - 1):
       val1 = x[i].T @ self.Q @ x[i]
       val2 = u[i].T @ self.R @ u[i]
       expr += val1 + val2
-    expr += x[N - 1].T @ self.Qf @ x[N - 1]
-    prog.AddQuadraticCost(expr)
+    expr += (x[N - 1]-x_des).reshape(1,6) @ self.Qf @ (x[N - 1] - x_des).reshape(6,1)
+    prog.AddQuadraticCost(expr[0,0])
 
   # def compute_mpc_feedback(self, x_current, x_js, x_des):
-  def compute_mpc_feedback(self, x_current):
+  def compute_mpc_feedback(self, x_current, x_des, x_js):
     '''
     This function computes the MPC controller input u
     '''
@@ -222,13 +222,13 @@ class Quadrotor(object):
     # Add constraints and cost
     self.add_initial_state_constraint(prog, x, x_current)
     self.add_input_saturation_constraint(prog, x, u, N)
-    self.add_linear_velocity_constraint(prog, x, N)
-    self.add_angular_velocity_constraint(prog, x, N) # Causes Overshoot
-    self.add_acceleration_constraint(prog, x, N) # Causes straight line trajectory, Overshoot w/o dt
-    self.add_angular_acceleration_constraint(prog, x, N) # Causes diverging trajectory by itself, All together straight line much slower calc time, Diverge w/o dt
-    self.add_dynamics_constraint(prog, x, u, N, T)
-    # self.add_cost(prog, x, x_js, x_des, u, N)
-    self.add_cost(prog, x, u, N)
+    #self.add_linear_velocity_constraint(prog, x, N)
+    #self.add_angular_velocity_constraint(prog, x, N) # Causes Overshoot
+    #self.add_acceleration_constraint(prog, x, N) # Causes straight line trajectory, Overshoot w/o dt
+    #self.add_angular_acceleration_constraint(prog, x, N) # Causes diverging trajectory by itself, All together straight line much slower calc time, Diverge w/o dt
+    self.add_dynamics_constraint(prog, x, x_des, u, N, T)
+    #self.add_cost(prog, x, x_current, x_js, x_des, u, N)
+    self.add_cost(prog, x, x_des, u, N)
 
     # Solve the QP
     solver = OsqpSolver()
