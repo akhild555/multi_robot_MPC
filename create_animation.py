@@ -48,11 +48,17 @@ def create_animation(x, tf, n_agents = 1, n_frames = 60):
     def frame(i):
         ax.clear()
         for n in range(n_agents):
+            if n == n_agents-1:
+                color = 'r'
+            else:
+                color = 'g'
             ax.plot(x_des[n, 0, 0], x_des[n, 0, 1], 'b*', label='desired position')
             ax.plot(x_anim[n, 0:i+1, 0], x_anim[n, 0:i+1, 1], '--', label='actual trajectory')
+            if n == n_agents - 1:
+                ax.plot(x_anim[n, 0:i + 1, 0], x_anim[n, 0:i + 1, 1], color + '--', label='actual trajectory')
             # plot=ax.scatter(x_anim[i, 0], x_anim[i, 1], c='r', label='quadrotor position')
             ax.plot([y[n, i] + a*cos(theta[n, i]), y[n, i] - a*cos(theta[n, i])],
-                           [z[n, i] + a*sin(theta[n, i]), z[n, i] - a*sin(theta[n, i])] , 'g','LineWidtheeta',3)
+                           [z[n, i] + a*sin(theta[n, i]), z[n, i] - a*sin(theta[n, i])] , color, 'LineWidtheeta',3)
 
             if(np.abs((x_max - x_min) - (y_max - y_min)) < 5):
                 ax.set_xlim(x_min - x_padding, x_max + x_padding)

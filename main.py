@@ -33,45 +33,43 @@ Qf = Q;
 tf = 10;
 
 
-# number of quadrotors
-num_quad = 4
+# number of cop quadrotors
+num_cops = 2
 
-# Construct our quadrotor controllers
+# Construct cop quadrotor controllers
 quadrotor0 = Quadrotor(Q, R, Qf);
 quadrotor1 = Quadrotor(Q, R, Qf);
-quadrotor_robber = QuadrotorRobber(Q, R, Qf);
 # quadrotor2 = Quadrotor(Q, R, Qf);
+
+# Construct robber quadrotor controller
+quad_robber = QuadrotorRobber(Q, R, Qf);
 # quadrotor3 = Quadrotor(Q, R, Qf);
 # quad_ctrls = [quadrotor0, quadrotor1, quadrotor2, quadrotor3]
-quad_ctrls = [quadrotor0, quadrotor1]
+quad_cops = [quadrotor0, quadrotor1]
 # quad_ctrls = [quadrotor0, quadrotor_robber]
 
 # initial states of quadrotors
 # x0 = np.array([0.5, 0.5, 0, 1, 1, 0])
 x0_0 = np.array([0.5, 0.5, 0, 1, 1, 0])
 x1_0 = np.array([0.75, 0.75, 0, 1, 1, 0])
-x2_0 = np.array([-1, 1, 0, 1, 1, 0])
-x3_0 = np.array([-2.5, 1, 0, 1, 1, 0])
+# x2_0 = np.array([-1, 1, 0, 1, 1, 0])
+# x3_0 = np.array([-2.5, 1, 0, 1, 1, 0])
 
-# x0 = [x0_0, x1_0, x2_0, x3_0]
-x0 = [x0_0, x1_0]
+x0_cops = [x0_0, x1_0]
+x0_robber = np.array([-3.5, 1, 0, 1, 1, 0])
 
 # simulate quadrotors
 # x, u, t = simulate_quadrotor(x0, tf, quad_ctrls, num_quad)
-x, u, t = simulate_quadrotor(x0, tf, quad_ctrls, 2)
-import matplotlib.pyplot as plt
+x_cops, u_cops, x_robber, u_robber, t = simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops)
 
 # fig1, ax1 = plt.subplots(1,1)
 # ax1.scatter(u[:, 0], u[:, 1])
 # fig1.show()
 # print(u)
-#
-# x2 = x + 0.1
-#
-# x3 = x2 + 0.1
+
 
 # anim, fig2 = create_animation(np.stack((x[0], x[1], x[2], x[3]), axis=0), tf, n_agents=4)
-anim, fig2 = create_animation(np.stack((x[0], x[1]), axis=0), tf, n_agents=2)
+anim, fig2 = create_animation(np.stack((x_cops[0], x_cops[1], x_robber), axis=0), tf, num_cops + 1)
 
 
 

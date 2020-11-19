@@ -214,7 +214,7 @@ class QuadrotorRobber(object):
       val2 = u[i].T @ self.R @ u[i]
       expr += val1 + val2
     expr += x[N - 1].T @ self.Qf @ x[N - 1]
-    prog.AddQuadraticCost(-expr)
+    prog.AddQuadraticCost(expr)
 
   # def compute_mpc_feedback(self, x_current, x_js, x_des):
   def compute_mpc_feedback(self, x_current):
@@ -238,11 +238,11 @@ class QuadrotorRobber(object):
     # Add constraints and cost
     self.add_initial_state_constraint(prog, x, x_current)
     self.add_input_saturation_constraint(prog, x, u, N)
-    # self.add_linear_velocity_constraint(prog, x, N)
-    # self.add_angular_velocity_constraint(prog, x, N)
-    # self.add_acceleration_constraint(prog, x, N)
-    # self.add_angular_acceleration_constraint(prog, x, N)
-    # self.add_dynamics_constraint(prog, x, u, N, T)
+    self.add_linear_velocity_constraint(prog, x, N)
+    self.add_angular_velocity_constraint(prog, x, N)
+    self.add_acceleration_constraint(prog, x, N)
+    self.add_angular_acceleration_constraint(prog, x, N)
+    self.add_dynamics_constraint(prog, x, u, N, T)
     # self.add_cost(prog, x, x_js, x_des, u, N)
     self.add_cost(prog, x, u, N)
 

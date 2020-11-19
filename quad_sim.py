@@ -4,7 +4,42 @@ from scipy.integrate import solve_ivp
 from quadrotor import Quadrotor
 import matplotlib.pyplot as plt
 
-def simulate_quadrotor(x0, tf, quadrotor, num_quad):
+def robber_sim(x_robber, quad_robber, dt):
+
+  current_x_robber = x_robber[-1]
+
+  current_u_cmd_robber = quad_robber.compute_mpc_feedback(current_x_robber)
+  current_u_robber_real = np.clip(current_u_cmd_robber, quad_robber.umin, quad_robber.umax)
+
+  # Autonomous ODE for constant inputs to work with solve_ivp
+  def f_robber(t, x):
+    return quad_robber.continuous_time_full_dynamics(current_x_robber, current_u_robber_real)
+
+  # Integrate one step
+  sol_rob = solve_ivp(f_robber, (0, dt), current_x_robber, first_step=dt)
+
+  return sol_rob.y[:, -1], current_u_cmd_robber
+
+def cop_sim(x_cop, quad_cop, dt):
+
+  current_x_cop = x_cop[-1]
+
+  current_u_cmd_cop = quad_cop.compute_mpc_feedback(current_x_cop)
+
+  current_u_cop_real = np.clip(current_u_cmd_cop, quad_cop.umin, quad_cop.umax)
+
+  # Autonomous ODE for constant inputs to work with solve_ivp
+  def f_cop(t, x):
+    return quad_cop.continuous_time_full_dynamics(current_x_cop, current_u_cop_real)
+
+  # Integrate one step
+  sol_cop = solve_ivp(f_cop, (0, dt), current_x_cop, first_step=dt)
+
+  return sol_cop.y[:, -1], current_u_cmd_cop
+
+
+
+def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops = 2):
   # Simulates a stabilized maneuver on the 2D quadrotor
   # system, with an initial value of x0
   t0 = 0.0
@@ -12,48 +47,49 @@ def simulate_quadrotor(x0, tf, quadrotor, num_quad):
 
   dt = 1e-2
 
-  x = []
-  u = []
-  for i in range(num_quad):
-    x.append([x0[i]])
-    u.append([np.zeros((2,))])
+  # robber setup
+  x_robber = [x0_robber]
+  u_robber = [np.zeros((2,))]
+
+  # cops setup
+  x_cops = []
+  u_cops = []
+  for i in range(num_cops):
+    x_cops.append([x0_cops[i]])
+    u_cops.append([np.zeros((2,))])
+
   t = [t0]
 
   eps = 1e-3
   eps_check = True
   while eps_check and t[-1] < tf:
 
-    for i in range(num_quad):
-      current_time = t[-1]
-      current_x = x[i][-1]
-      current_u_command = np.zeros(2)
+    # current_time = t[-1]
 
-      current_u_command = quadrotor[i].compute_mpc_feedback(current_x)
+    # Compute MPC for robber
+    sol_rob, u_cmd_rob = robber_sim(x_robber, quad_robber, dt)
+    x_robber.append(sol_rob)
+    u_robber.append(u_cmd_rob)
 
-      current_u_real = np.clip(current_u_command, quadrotor[i].umin, quadrotor[i].umax)
-
-      # Autonomous ODE for constant inputs to work with solve_ivp
-      def f(t, x):
-        return quadrotor[i].continuous_time_full_dynamics(current_x, current_u_real)
-      # Integrate one step
-      sol = solve_ivp(f, (0, dt), current_x, first_step=dt)
-
-      # Record state, and inputs
-      x[i].append(sol.y[:, -1])
-      u[i].append(current_u_command)
+    # compute MPC for cops
+    for i in range(num_cops):
+      sol_cop, u_cmd_cop = robber_sim(x_cops[i], quad_cops[i], dt)
+      x_cops[i].append(sol_cop)
+      u_cops[i].append(u_cmd_cop)
 
     t.append(t[-1] + dt)
+
     # calculate norms for all quads
     norms = []
-    for i in range(num_quad):
-      norm = np.linalg.norm(np.array(x[i][-1][0:2]))
+    for i in range(num_cops):
+      norm = np.linalg.norm(np.array(x_cops[i][-1][0:2]))
       norms.append(norm)
     eps_check = all(i > eps for i in norms)
 
-  x = np.array(x)
-  u = np.array(u)
+  x_cops = np.array(x_cops)
+  u_cops = np.array(u_cops)
   t = np.array(t)
-  return x, u, t
+  return x_cops, u_cops, x_robber, u_robber, t
 
 def plot_x_and_u(x, u, t, name):
   plt.figure()
