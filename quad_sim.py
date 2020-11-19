@@ -47,7 +47,8 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
 
     dt = 1e-2
 
-    x_rob_des = np.array([3.5, 1, 0, 1, 1, 0])
+    # x_rob_des = np.array([3.5, 1, 0, 1, 1, 0])
+    x_rob_des = np.array([0, 0, 0, 0, 0, 0])
     # robber setup
     x_robber = [x0_robber]
     u_robber = [np.zeros((2,))]

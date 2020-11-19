@@ -123,8 +123,8 @@ class Quadrotor(object):
   def add_angular_velocity_constraint(self, prog, x, N):
     # -0.075 rad/s <= w <= 0.075 rad/s
     # N or N-1?
-    w_min = -0.075
-    w_max = 0.075
+    w_min = -0.7 # ~6.97s
+    w_max = 0.7 #
     for i in range(N):
       prog.AddBoundingBoxConstraint(w_min, w_max, x[i][5])
     # pass
@@ -145,8 +145,10 @@ class Quadrotor(object):
 
   def add_angular_acceleration_constraint(self, prog, x, N):
       #   # -0.005 rad/s^2 <= alpha <= 0.005 rad/s^2
-    alpha_min = -0.005
-    alpha_max = 0.005
+    alpha_min = -0.4 # Same as w/0 alpha constraints
+    alpha_max = 0.4 # ~6.97s
+    # alpha_min = -0.0003 # Faster Cop Response but won't converge
+    # alpha_max = 0.0003
     dt = 1e-2
     for i in range(1, N):
       # accel = (x[i][5] - x[i - 1][5]) / dt
@@ -222,10 +224,10 @@ class Quadrotor(object):
     # Add constraints and cost
     self.add_initial_state_constraint(prog, x, x_current)
     self.add_input_saturation_constraint(prog, x, u, N)
-    #self.add_linear_velocity_constraint(prog, x, N)
-    #self.add_angular_velocity_constraint(prog, x, N) # Causes Overshoot
-    #self.add_acceleration_constraint(prog, x, N) # Causes straight line trajectory, Overshoot w/o dt
-    #self.add_angular_acceleration_constraint(prog, x, N) # Causes diverging trajectory by itself, All together straight line much slower calc time, Diverge w/o dt
+    self.add_linear_velocity_constraint(prog, x, N)
+    self.add_angular_velocity_constraint(prog, x, N)
+    self.add_acceleration_constraint(prog, x, N)
+    self.add_angular_acceleration_constraint(prog, x, N)
     self.add_dynamics_constraint(prog, x, x_des, u, N, T)
     #self.add_cost(prog, x, x_current, x_js, x_des, u, N)
     self.add_cost(prog, x, x_des, u, N)
