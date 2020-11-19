@@ -156,14 +156,14 @@ class QuadrotorRobber(object):
 
     # pass
 
-  def add_dynamics_constraint(self, prog, x, u, N, T):
+  def add_dynamics_constraint(self, prog, x, x_des, u, N, T):
     # TODO: impose dynamics constraint.
     # Use AddLinearEqualityConstraint(expr, value)
     A, B = self.discrete_time_linearized_dynamics(T)
 
     for i in range(N-1):
-      val = A @ x[i] + B @ u[i]
-      prog.AddLinearEqualityConstraint(x[i+1]-val, np.zeros(len(x[i])))
+      val = A @ (x[i]) + B @ u[i]
+      prog.AddLinearEqualityConstraint((x[i+1])-val, np.zeros(len(x[i])))
     # pass
 
   # def add_cost(self, prog, x, x_js, x_des, u, N):
@@ -206,18 +206,18 @@ class QuadrotorRobber(object):
   #     pass
 
   # HW6 Cost
-  def add_cost(self, prog, x, u, N):
+  def add_cost(self, prog, x, x_des, u, N):
     # TODO: add cost.
     expr = 0
     for i in range(N - 1):
       val1 = x[i].T @ self.Q @ x[i]
       val2 = u[i].T @ self.R @ u[i]
       expr += val1 + val2
-    expr += x[N - 1].T @ self.Qf @ x[N - 1]
-    prog.AddQuadraticCost(expr)
+    expr += (x[N - 1] - x_des).reshape(1, 6) @ self.Qf @ (x[N - 1] - x_des).reshape(6,1)
+    prog.AddQuadraticCost(expr[0,0])
 
   # def compute_mpc_feedback(self, x_current, x_js, x_des):
-  def compute_mpc_feedback(self, x_current):
+  def compute_mpc_feedback(self, x_current, x_des):
     '''
     This function computes the MPC controller input u
     '''
@@ -238,13 +238,13 @@ class QuadrotorRobber(object):
     # Add constraints and cost
     self.add_initial_state_constraint(prog, x, x_current)
     self.add_input_saturation_constraint(prog, x, u, N)
-    self.add_linear_velocity_constraint(prog, x, N)
-    self.add_angular_velocity_constraint(prog, x, N)
-    self.add_acceleration_constraint(prog, x, N)
-    self.add_angular_acceleration_constraint(prog, x, N)
-    self.add_dynamics_constraint(prog, x, u, N, T)
+    #self.add_linear_velocity_constraint(prog, x, N)
+    #self.add_angular_velocity_constraint(prog, x, N)
+    #self.add_acceleration_constraint(prog, x, N)
+    #self.add_angular_acceleration_constraint(prog, x, N)
+    self.add_dynamics_constraint(prog, x, x_des, u, N, T)
     # self.add_cost(prog, x, x_js, x_des, u, N)
-    self.add_cost(prog, x, u, N)
+    self.add_cost(prog, x, x_des, u, N)
 
     # Solve the QP
     solver = OsqpSolver()
