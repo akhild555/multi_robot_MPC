@@ -13,7 +13,7 @@ def robber_sim(x_robber, quad_robber, x_des, dt):
 
     # Autonomous ODE for constant inputs to work with solve_ivp
     def f_robber(t, x):
-        return quad_robber.continuous_time_full_dynamics(current_x_robber, current_u_robber_real)
+        return quad_robber.continuous_time_full_dynamics(current_x_robber + x_des, current_u_robber_real)
 
     # Integrate one step
     sol_rob = solve_ivp(f_robber, (0, dt), current_x_robber, first_step=dt)
@@ -22,7 +22,7 @@ def robber_sim(x_robber, quad_robber, x_des, dt):
 
 def cop_sim(x_cop, quad_cop, x_des, xjs, dt):
 
-    current_x_cop = x_cop[-1]
+    current_x_cop = x_cop[-1].copy()
 
     current_u_cmd_cop = quad_cop.compute_mpc_feedback(current_x_cop, x_des, xjs)
 
@@ -30,14 +30,12 @@ def cop_sim(x_cop, quad_cop, x_des, xjs, dt):
 
     # Autonomous ODE for constant inputs to work with solve_ivp
     def f_cop(t, x):
-        return quad_cop.continuous_time_full_dynamics(current_x_cop, current_u_cop_real)
+        return quad_cop.continuous_time_full_dynamics(current_x_cop + x_des, current_u_cop_real)
 
     # Integrate one step
     sol_cop = solve_ivp(f_cop, (0, dt), current_x_cop, first_step=dt)
 
     return sol_cop.y[:, -1], current_u_cmd_cop
-
-
 
 def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops = 2):
     # Simulates a stabilized maneuver on the 2D quadrotor
@@ -47,7 +45,6 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
 
     dt = 1e-2
 
-    # x_rob_des = np.array([3.5, 1, 0, 1, 1, 0])
     x_rob_des = np.array([0, 0, 0, 0, 0, 0])
     # robber setup
     x_robber = [x0_robber]
@@ -67,11 +64,11 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
     while eps_check and t[-1] < tf:
 
         # current_time = t[-1]
-        x_cop_des = x_robber[-1]
-
+        x_cop_des = x_robber[-1].copy()
+        x_cop_des[3:] = 0
 
         # Compute MPC for robber
-        sol_rob, u_cmd_rob = robber_sim(x_robber, quad_robber, x_rob_des, dt)
+        sol_rob, u_cmd_rob = robber_sim(x_robber.copy(), quad_robber, x_rob_des, dt)
         x_robber.append(sol_rob)
         u_robber.append(u_cmd_rob)
 
