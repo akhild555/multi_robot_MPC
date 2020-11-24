@@ -45,7 +45,7 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
 
     dt = 1e-2
 
-    x_rob_des = np.array([0, 0, 0, 0, 0, 0])
+    x_rob_des = np.array([12, 0, 0, 0, 0, 0])
     # robber setup
     x_robber = [x0_robber]
     u_robber = [np.zeros((2,))]
@@ -59,13 +59,15 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
 
     t = [t0]
 
-    eps = 1e-3
+    x_cop_des = []
+
+    eps = 1e-1
     eps_check = True
     while eps_check and t[-1] < tf:
 
         # current_time = t[-1]
-        x_cop_des = x_robber[-1].copy()
-        x_cop_des[3:] = 0
+        x_cop_des.append(x_robber[-1].copy())
+        x_cop_des[-1][3:] = 0
 
         # Compute MPC for robber
         sol_rob, u_cmd_rob = robber_sim(x_robber.copy(), quad_robber, x_rob_des, dt)
@@ -83,7 +85,7 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
                 if not i==j:
                     xjs.append(xj_curr[j])
 
-            sol_cop, u_cmd_cop = cop_sim(x_cops[i], quad_cops[i], x_cop_des, xjs, dt)
+            sol_cop, u_cmd_cop = cop_sim(x_cops[i], quad_cops[i], x_cop_des[-1], xjs, dt)
             x_cops[i].append(sol_cop)
             u_cops[i].append(u_cmd_cop)
 
@@ -92,16 +94,21 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
         # calculate norms for all quads
         norms = []
         for i in range(num_cops):
-            norm = np.linalg.norm(np.array(x_cops[i][-1][0:2]))
+            norm = np.linalg.norm(np.array(x_cops[i][-1][0:2]) - x_cop_des[-1][0:2])
             norms.append(norm)
-        eps_check = any(i > eps for i in norms)
+        eps_check = all(i > eps for i in norms)
 
-        print(t[-1])
+        print("time: {}".format(t[-1]))
+        print("norms: {}".format(norms))
+        #print("cops: {}".format(x_cops[:][-1]))
+        print("desired: {}\n".format(x_cop_des[-1]))
 
     x_cops = np.array(x_cops)
+    x_cop_des = np.array(x_cop_des)
     u_cops = np.array(u_cops)
+    x_rob_des = np.array(x_rob_des)
     t = np.array(t)
-    return x_cops, u_cops, x_robber, u_robber, t
+    return x_cops, x_cop_des, u_cops, x_robber, x_rob_des, u_robber, t
 
 def plot_x_and_u(x, u, t, name):
     plt.figure()
