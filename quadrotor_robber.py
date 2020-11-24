@@ -121,27 +121,25 @@ class QuadrotorRobber(object):
     v_min = -2.5
     v_max = 2.5
     for i in range(N):
-      prog.AddBoundingBoxConstraint(v_min, v_max, x[i][3:5] + x_des)
+      prog.AddBoundingBoxConstraint(v_min - x_des[3:5], v_max - x_des[3:5], x[i][3:5])
     # pass
 
   def add_angular_velocity_constraint(self, prog, x, x_des, N):
     # -0.075 rad/s <= w <= 0.075 rad/s
     # N or N-1?
-    w_min = -0.075
-    w_max = 0.075
+    w_min = -0.7
+    w_max = 0.7
     for i in range(N):
-      prog.AddBoundingBoxConstraint(w_min, w_max, x[i][5] + x_des)
+      prog.AddBoundingBoxConstraint(w_min - x_des[5], w_max - x_des[5], x[i][5])
     # pass
 
   def add_acceleration_constraint(self, prog, x, x_des, N):
     #   # -0.25 m/s^2 <= a <= 0.25 m/s^2
-    a_min = -0.25
-    a_max = 0.25
+    a_min = -10
+    a_max = 10
     dt = 1e-2
     for i in range(1, N):
-      # accel = (x[i][3:5] - x[i - 1][3:5]) /dt
-      x_real = x[i] + x_des
-      accel = (x_real[i][3:5] - x_real[i - 1][3:5]) # 1 sec Interval
+      accel = (x[i][3:5] - x[i - 1][3:5])# 1 sec Interval
       prog.AddLinearConstraint(accel[0] <= a_max) # y_ddot UB
       prog.AddLinearConstraint(accel[0] >= a_min) # y_ddot LB
       prog.AddLinearConstraint(accel[1] <= a_max) # z_ddot UB
@@ -150,13 +148,11 @@ class QuadrotorRobber(object):
 
   def add_angular_acceleration_constraint(self, prog, x, x_des, N):
       #   # -0.005 rad/s^2 <= alpha <= 0.005 rad/s^2
-    alpha_min = -0.005
-    alpha_max = 0.005
+    alpha_min = -10
+    alpha_max = 10
     dt = 1e-2
     for i in range(1, N):
-      # accel = (x[i][5] - x[i - 1][5]) / dt
-      x_real = x[i] + x_des
-      accel = (x_real[i][5] - x_real[i - 1][5]) # 1 sec Interval
+      accel = (x[i][5] - x[i - 1][5]) #1 sec Interval
       prog.AddLinearConstraint(accel <= alpha_max)  # theta_ddot UB
       prog.AddLinearConstraint(accel >= alpha_min)  # theta_ddot LB
 
@@ -245,10 +241,10 @@ class QuadrotorRobber(object):
     # Add constraints and cost
     self.add_initial_state_constraint(prog, x, x_des, x_current)
     self.add_input_saturation_constraint(prog, x, x_des, u, N)
-    #self.add_linear_velocity_constraint(prog, x, N)
-    #self.add_angular_velocity_constraint(prog, x, N)
-    #self.add_acceleration_constraint(prog, x, N)
-    #self.add_angular_acceleration_constraint(prog, x, N)
+    #self.add_linear_velocity_constraint(prog, x, x_des, N)
+    #self.add_angular_velocity_constraint(prog, x, x_des, N)
+    #self.add_acceleration_constraint(prog, x, x_des, N)
+    #self.add_angular_acceleration_constraint(prog, x, x_des, N)
     self.add_dynamics_constraint(prog, x, x_des, u, N, T)
     # self.add_cost(prog, x, x_js, x_des, u, N)
     self.add_cost(prog, x, u, N)
