@@ -56,7 +56,7 @@ x2_0 = np.array([-1, 1, 0, 1, 1, 0])
 # x3_0 = np.array([-2.5, 1, 0, 1, 1, 0])
 
 x0_cops = [x0_0, x1_0, x2_0]
-x0_robber = np.array([-3.5, 1, 0, 1, 1, 0])
+x0_robber = np.array([3.5, 1, 0, 0, 0, 0])
 
 # simulate quadrotors
 # x, u, t = simulate_quadrotor(x0, tf, quad_ctrls, num_quad)
