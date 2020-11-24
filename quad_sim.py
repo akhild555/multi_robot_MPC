@@ -4,6 +4,36 @@ from scipy.integrate import solve_ivp
 from quadrotor import Quadrotor
 import matplotlib.pyplot as plt
 
+def closest_cop(cop_positions, robber_position):
+    # initialize
+    dist = np.inf
+    close_cop = np.array([-1,-1])
+
+    for i in cop_positions:
+        dist_new = (((i[0] - robber_position[0]) ** 2) +  ((i[1] - robber_position[1]) ** 2) ** (1/2))
+        if dist_new < dist:
+            dist = dist_new
+            furthest_point = i
+
+    close_cop = np.array([furthest_point[0], furthest_point[1], 0,0,0,0])
+
+    return close_cop
+
+def robber_desired_pos(cop_center, extents):
+    # initialize
+    dist = -1
+    furthest_point = np.array([0,0])
+
+    for i in extents:
+        dist_new = (((i[0] - cop_center[0]) ** 2) +  ((i[1] - cop_center[1]) ** 2) ** (1/2))
+        if dist_new > dist and dist_new < 1:
+            print(dist_new)
+            dist = dist_new
+            furthest_point = i
+    furthest_point = np.array([furthest_point[0], furthest_point[1], 0,0,0,0])
+
+    return furthest_point
+
 def robber_sim(x_robber, quad_robber, x_des, dt):
 
     current_x_robber = x_robber[-1]
@@ -42,10 +72,16 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
     # system, with an initial value of x0
     t0 = 0.0
     n_points = 1000
-
     dt = 1e-2
 
-    x_rob_des = np.array([0, 0, 0, 0, 0, 0])
+    env_extents = np.array([[0, 0],
+                            [5, 5],
+                            [0, 5],
+                            [5, 0]])
+
+    # x_rob_des = np.array([3.5, 1, 0, 1, 1, 0])
+    # x_rob_des = np.array([0, 0, 0, 0, 0, 0])
+
     # robber setup
     x_robber = [x0_robber]
     u_robber = [np.zeros((2,))]
@@ -53,22 +89,33 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
     # cops setup
     x_cops = []
     u_cops = []
+    x_cops_current = np.zeros((num_cops, 2))
     for i in range(num_cops):
+        x_cops_current[i] = x0_cops[i][0:2]
         x_cops.append([x0_cops[i]])
         u_cops.append([np.zeros((2,))])
 
     t = [t0]
-
     eps = 1e-3
     eps_check = True
+
     while eps_check and t[-1] < tf:
 
+        # get position of closest cop
+        close_cop = closest_cop(x_cops_current, x_robber[-1])
+
+        # get desired robot position based on closest cop
+        x_rob_des = robber_desired_pos(close_cop, env_extents)
+
+        # re-initialize current positions of all cops
+        x_cops_current = np.zeros((num_cops, 2))
+        print("x_rob_des = ", x_rob_des)
+
         # current_time = t[-1]
-        x_cop_des = x_robber[-1].copy()
-        x_cop_des[3:] = 0
+        x_cop_des = np.array([x_robber[-1][0],x_robber[-1][1], 0,0,0,0])
 
         # Compute MPC for robber
-        sol_rob, u_cmd_rob = robber_sim(x_robber.copy(), quad_robber, x_rob_des, dt)
+        sol_rob, u_cmd_rob = robber_sim(x_robber, quad_robber, x_rob_des, dt)
         x_robber.append(sol_rob)
         u_robber.append(u_cmd_rob)
 
@@ -80,10 +127,11 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
         for i in range(num_cops):
             xjs = []
             for j in range(num_cops):
-                if not i==j:
+                if not i == j:
                     xjs.append(xj_curr[j])
 
             sol_cop, u_cmd_cop = cop_sim(x_cops[i], quad_cops[i], x_cop_des, xjs, dt)
+            x_cops_current[i] = x_cops[i][-1][0:2]
             x_cops[i].append(sol_cop)
             u_cops[i].append(u_cmd_cop)
 
@@ -95,12 +143,12 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
             norm = np.linalg.norm(np.array(x_cops[i][-1][0:2]))
             norms.append(norm)
         eps_check = any(i > eps for i in norms)
-
         print(t[-1])
 
     x_cops = np.array(x_cops)
     u_cops = np.array(u_cops)
     t = np.array(t)
+
     return x_cops, u_cops, x_robber, u_robber, t
 
 def plot_x_and_u(x, u, t, name):

@@ -26,7 +26,7 @@ from create_animation import create_animation
 
 # Weights of LQR cost
 R = np.eye(2);
-Q = np.diag([10, 10, 1, 1, 1, 1]);
+Q = np.diag([1, 1, 1, 1, 1, 1]);
 Qf = Q
 
 # End time of the simulation
@@ -50,9 +50,9 @@ quad_cops = [quadrotor0, quadrotor1, quadrotor2]
 
 # initial states of quadrotors
 # x0 = np.array([0.5, 0.5, 0, 1, 1, 0])
-x0_0 = np.array([0.5, 0.5, 0, 1, 1, 0])
-x1_0 = np.array([0.75, 0.75, 0, 1, 1, 0])
-x2_0 = np.array([-1, 1, 0, 1, 1, 0])
+x0_0 = np.array([2, 0.5, 0, 1, 1, 0])
+x1_0 = np.array([1, 3, 0, 1, 1, 0])
+x2_0 = np.array([5, 3, 0, 1, 1, 0])
 # x3_0 = np.array([-2.5, 1, 0, 1, 1, 0])
 
 x0_cops = [x0_0, x1_0, x2_0]
