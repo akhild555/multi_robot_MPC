@@ -3,6 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 import matplotlib.animation as animation
+import importlib
+import environment_manager
+importlib.reload(environment_manager)
+from environment_manager import Map
 
 def create_animation(x, x_des, tf, n_agents = 1, n_frames = 60):
     # Sample desired trajectory
@@ -26,6 +30,34 @@ def create_animation(x, x_des, tf, n_agents = 1, n_frames = 60):
     x_min = min(np.min(x_des[:, :, 0]), np.min(x[:, :, 0]))
     y_max = max(np.max(x_des[:, :, 1]), np.max(x[:, :, 1]))
     y_min = min(np.min(x_des[:, :, 1]), np.min(x[:, :, 1]))
+
+    environment = Map # Initialize Map Class
+    # # Map 0: Straightway
+    # y_max = 12
+    # y_min = 0
+    # z_max = 35
+    # z_min = 0
+    # ax.set_xlim(y_min, y_max)
+    # ax.set_ylim(z_min, z_max)
+    # ax.set_aspect('equal')
+
+    # # Map 1: City Blocks
+    # y_max = 12
+    # y_min = 0
+    # z_max = 35
+    # z_min = 0
+    # ax.set_xlim(y_min, y_max)
+    # ax.set_ylim(z_min, z_max)
+    # ax.set_aspect('equal')
+
+    # # Map 2: Symmetric Maze
+    # y_max = 7.5
+    # y_min = 0
+    # z_max = 35
+    # z_min = 0
+    # ax.set_xlim(y_min, y_max)
+    # ax.set_ylim(z_min, z_max)
+    # ax.set_aspect('equal')
 
     #n_frames = round(x.shape[1]/10)
     # noinspection PyTypeChecker
@@ -56,6 +88,8 @@ def create_animation(x, x_des, tf, n_agents = 1, n_frames = 60):
                 key = 0
                 color = 'g'
 
+            # environment().map_1(ax) # Map 1
+            # environment().map_2(ax) # Map 2
             ax.plot(x_d_anim[key, i, 0], x_d_anim[key, i, 1], color+'*', label='desired position')
             ax.plot(x_anim[n, 0:i + 1, 0], x_anim[n, 0:i + 1, 1], color+'--', label='actual trajectory')
 
