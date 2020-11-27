@@ -22,7 +22,8 @@ def create_animation(x, x_des, tf, n_agents = 1, n_frames = 60):
 
     fig = plt.figure(figsize=(8,6))
     ax = plt.axes()
-    print(x_des)
+    # print(x_des) this
+    # print(x_des) this
     if n_agents == 1:
         x = x.reshape((1, x.shape[0], x.shape[1]))
 

@@ -50,24 +50,28 @@ def robber_sim(x_robber, quad_robber, x_des, dt):
 
     return sol_rob.y[:, -1], current_u_cmd_robber
 
-def cop_sim(x_cop, quad_cop, x_des, xjs, dt):
+def cop_sim(x_cops, quad_cops, x_des, xjs, dt, num_cops):
 
-    current_x_cop = x_cop[-1].copy()
+    current_x_cops = x_cops[-3:].copy() # list of lists of arrays
 
-    current_u_cmd_cop = quad_cop.compute_mpc_feedback(current_x_cop, x_des, xjs)
+    current_u_cmd_cops = quad_cops.compute_mpc_feedback(current_x_cops, x_des, xjs) # Returns 3x2 array
 
-    current_u_cop_real = np.clip(current_u_cmd_cop, quad_cop.umin, quad_cop.umax)
+    current_u_cops_real = np.clip(current_u_cmd_cops, quad_cops.umin, quad_cops.umax)
 
     # Autonomous ODE for constant inputs to work with solve_ivp
-    def f_cop(t, x):
-        return quad_cop.continuous_time_full_dynamics(current_x_cop + x_des, current_u_cop_real)
+    sol_cops = []
+    for i in range(num_cops):
 
-    # Integrate one step
-    sol_cop = solve_ivp(f_cop, (0, dt), current_x_cop, first_step=dt)
+      def f_cop(t, x):
+        return quad_cops.continuous_time_full_dynamics(current_x_cops[i][0] + x_des[i][0], current_u_cops_real[i])
 
-    return sol_cop.y[:, -1], current_u_cmd_cop
+      # Integrate one step
+      sol_cop = solve_ivp(f_cop, (0, dt), current_x_cops[i][0], first_step=dt)
+      sol_cops.append(sol_cop.y[:, -1]) # Appends (6,) array
 
-def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops = 2):
+    return sol_cops, current_u_cmd_cops # sol_cops: List of arrays, current_u_cmd: 3x2 array
+
+def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops = 2):
     # Simulates a stabilized maneuver on the 2D quadrotor
     # system, with an initial value of x0
     t0 = 0.0
@@ -128,11 +132,16 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
             for j in range(num_cops):
                 if not i==j:
                     xjs.append(xj_curr[j])
-            # print(type(x_cop_des))
-            sol_cop, u_cmd_cop = cop_sim(x_cops[i], quad_cops[i], x_cop_des[-1], xjs, dt)
-            x_cops_current[i] = x_cops[i][-1][0:2]
-            x_cops[i].append(sol_cop)
-            u_cops[i].append(u_cmd_cop)
+        xjs = []
+        # List of Each Cop's Desired State Vector
+        x_cops_des = [[x_cop_des[-1]]]*num_cops # List of lists of arrays
+        # a=x_cops_des[-3:] # Returns list of lists of arrays
+        # x_cops list of lists of arrays
+        sol_cops, u_cmd_cops = cop_sim(x_cops, quad_cops, x_cops_des[-3:], xjs, dt, num_cops)
+        for i in range(num_cops):
+          x_cops_current[i] = x_cops[i][-1][0:2]
+          x_cops[i].append(sol_cops[i])
+          u_cops[i].append(u_cmd_cops[i])
 
         t.append(t[-1] + dt)
 
@@ -181,7 +190,7 @@ if __name__ == '__main__':
     Q = np.diag([10, 10, 1, 1, 1, 1]);
     Qf = Q;
 
-    quadrotor = Quadrotor(Q, R, Qf);
+    quadrotor = QuadrotorCentralized(Q, R, Qf);
 
     # Initial state
     d_rand = 1
@@ -189,7 +198,7 @@ if __name__ == '__main__':
 
     tf = 10;
 
-    x, u, t = simulate_quadrotor(x0, tf, quadrotor)
+    x, u, t = simulate_quadrotor_centralized(x0, tf, quadrotor)
     plot_x_and_u(x, u, t, "MPC")
 
     plt.show()

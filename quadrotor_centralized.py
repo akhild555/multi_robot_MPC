@@ -18,7 +18,7 @@ import pydrake.symbolic as sym
 
 from pydrake.all import MonomialBasis, OddDegreeMonomialBasis, Variables
 
-class Quadrotor(object):
+class QuadrotorCentralized(object):
   def __init__(self, Q, R, Qf):
     self.g = 9.81
     self.m = 1
@@ -192,14 +192,18 @@ class Quadrotor(object):
   #     pass
 
   # HW6 Cost
-  def add_cost(self, prog, x, u, N):
+  def add_cost(self, prog, x_all, u_all, N):
     # TODO: add cost.
     expr = 0
-    for i in range(N - 1):
-      val1 = x[i].T @ self.Q @ x[i]
-      val2 = u[i].T @ self.R @ u[i]
-      expr += val1 + val2
-    expr += (x[N - 1]).T @ self.Qf @ x[N - 1]
+    # Loop Through Each Cop
+    for i in range(len(x_all)):
+      # For Each Cop, Add Cost For Knot Point
+      for j in range(N - 1):
+        val1 = x_all[i][j].T @ self.Q @ x_all[i][j]
+        val2 = u_all[i][j].T @ self.R @ u_all[i][j]
+        expr += val1 + val2
+      # Add End Point for Each Cop
+      expr += (x_all[i][N - 1]).T @ self.Qf @ x_all[i][N - 1]
     prog.AddQuadraticCost(expr)
 
   # def compute_mpc_feedback(self, x_current, x_js, x_des):
@@ -214,37 +218,53 @@ class Quadrotor(object):
 
     # Initialize mathematical program and decalre decision variables
     prog = MathematicalProgram()
-    x = np.zeros((N, 6), dtype="object")
+    # Initialize State Decision Variables for Cops
+    x_cop1 = np.zeros((N, 6), dtype="object")
+    x_cop2 = np.zeros((N, 6), dtype="object")
+    x_cop3 = np.zeros((N, 6), dtype="object")
+    # Create State Decision Variables for Cops
     for i in range(N):
-      x[i] = prog.NewContinuousVariables(6, "x_" + str(i))
-    u = np.zeros((N-1, 2), dtype="object")
+      x_cop1[i] = prog.NewContinuousVariables(6, "x_cop1_" + str(i))
+      x_cop2[i] = prog.NewContinuousVariables(6, "x_cop2_" + str(i))
+      x_cop3[i] = prog.NewContinuousVariables(6, "x_cop3_" + str(i))
+    # Initialize Input Decision Variables for Cops
+    u_cop1 = np.zeros((N-1, 2), dtype="object")
+    u_cop2 = np.zeros((N-1, 2), dtype="object")
+    u_cop3 = np.zeros((N-1, 2), dtype="object")
+    # Create Input Decision Variables for Cops
     for i in range(N-1):
-      u[i] = prog.NewContinuousVariables(2, "u_" + str(i))
+      u_cop1[i] = prog.NewContinuousVariables(2, "u_cop1_" + str(i))
+      u_cop2[i] = prog.NewContinuousVariables(2, "u_cop2_" + str(i))
+      u_cop3[i] = prog.NewContinuousVariables(2, "u_cop3_" + str(i))
 
-    # print("x_all", x)
-    # print("x_des", x_des)
-    # print("x_current", x_current)
-    # Add constraints and cost
-    self.add_initial_state_constraint(prog, x, x_des, x_current)
-    self.add_input_saturation_constraint(prog, x, x_des, u, N)
-    #self.add_linear_velocity_constraint(prog, x, x_des, N)
-    #self.add_angular_velocity_constraint(prog, x, x_des, N)
-    #self.add_acceleration_constraint(prog, x, x_des, N)
-    #self.add_angular_acceleration_constraint(prog, x, x_des, N)
-    self.add_dynamics_constraint(prog, x, x_des, u, N, T)
-    #self.add_cost(prog, x, x_current, x_js, x_des, u, N)
-    self.add_cost(prog, x, u, N)
-
+    # Combine State Decision Variables
+    x_all = [x_cop1, x_cop2, x_cop3]
+    # Combine Input Decision Variables
+    u_all = [u_cop1, u_cop2, u_cop3]
+    # Add constraints
+    for i in range(len(x_all)):
+      self.add_initial_state_constraint(prog, x_all[i], x_des[i][0], x_current[i][0])
+      self.add_input_saturation_constraint(prog, x_all[i], x_des[i][0], u_all[i], N)
+      #self.add_linear_velocity_constraint(prog, x_all[i], x_des[i][0], N)
+      #self.add_angular_velocity_constraint(prog, x_all[i], x_des[i][0], N)
+      #self.add_acceleration_constraint(prog, x_all[i], x_des[i][0], N)
+      #self.add_angular_acceleration_constraint(prog, x_all[i], x_des[i][0], N)
+      self.add_dynamics_constraint(prog, x_all[i], x_des[i][0], u_all[i], N, T)
+    # Add Cost
+    self.add_cost(prog, x_all, u_all, N)
     # Solve the QP
     solver = OsqpSolver()
     result = solver.Solve(prog)
 
-    u_mpc = np.zeros(2)
+    u_mpc = np.zeros((3,2))
     # TODO: retrieve the controller input from the solution of the optimization problem
     # and use it to compute the MPC input u
     # You should make use of result.GetSolution(decision_var) where decision_var
     # is the variable you want
-
-    u_mpc = result.GetSolution(u[0]) + self.u_d(x_des)
+    # a = result.GetSolution(u_all[0][0])
+    # print(result.GetSolution(u_all))
+    for i in range(len(x_all)):
+      u_mpc[i] = result.GetSolution(u_all[i][0]) + self.u_d(x_des[i][0])
+      # print(u_mpc)
 
     return u_mpc

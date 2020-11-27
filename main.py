@@ -4,17 +4,23 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 import importlib
 import matplotlib; matplotlib.use("TkAgg")
+import time
 
+# Import Simulator
 from quad_sim import simulate_quadrotor
+from quad_sim_centralized import simulate_quadrotor_centralized
 
 # Need to reload the module to use the latest code
 import quadrotor
 import quadrotor_robber
+import quadrotor_centralized
 
 importlib.reload(quadrotor)
 importlib.reload(quadrotor_robber)
+importlib.reload(quadrotor_centralized)
 from quadrotor import Quadrotor
 from quadrotor_robber import QuadrotorRobber
+from quadrotor_centralized import QuadrotorCentralized
 
 """
 Load in the animation function
@@ -36,6 +42,7 @@ tf = 25
 # number of cop quadrotors
 num_cops = 3
 
+# Distributed MPC
 # Construct cop quadrotor controllers
 quadrotor0 = Quadrotor(Q, R, Qf)
 quadrotor1 = Quadrotor(Q, R, Qf)
@@ -60,7 +67,11 @@ x0_robber = np.array([-3.5, 1, 0, 0, 0, 0])
 
 # simulate quadrotors
 # x, u, t = simulate_quadrotor(x0, tf, quad_ctrls, num_quad)
-x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops)
+# x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops)
+
+# Centralized MPC
+quadrotor_central = QuadrotorCentralized(Q, R, Qf)
+x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor_centralized(x0_cops, x0_robber, quadrotor_central, quad_robber, tf, num_cops)
 
 # fig1, ax1 = plt.subplots(1,1)
 # ax1.scatter(u[:, 0], u[:, 1])
