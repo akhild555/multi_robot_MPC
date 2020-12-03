@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon, Circle, Rectangle, Ellipse
+import matplotlib.pyplot as plt
 
 
 class Map(object):
@@ -103,6 +104,51 @@ class Map(object):
     for obs in circle_obs:
       ax.add_patch(obs)
 
+  # Map 3: Small Symmetric Maze
+  def map_3(self, ax):
+    circle_init_y = 1.5
+    circle_init_z = 1.5
+    z_spacing_centered = 3 # For Centered Obstacles
+    z_spacing_offset = 1.5 # For Offset Obstacles
+    col_2 = 2 # Distance From 1st Col of Obs
+    col_3 = 4 # Distance From 1st Col of Obs
+    y_spacing_l = 0.75
+    y_spacing_r = 1
+    circle_radius = 0.25
+    # Initialize Starting Obstacles
+    circle_obs = [Circle((circle_init_y, circle_init_z), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y + col_2, circle_init_z + 2), circle_radius, facecolor=self.blue)]
+    circle_center_y = circle_init_y
+    circle_center_z = circle_init_z
+    # Generate List of All Obstacles
+    for i in range(1):
+      # Create Centered Obstacles
+      # 1st Col
+      # circle_obs.append(Circle((circle_center_y, circle_center_z + z_spacing_centered),
+      #                          circle_radius, facecolor=self.blue))
+      # 2nd Col
+      # circle_obs.append(Circle((circle_center_y + col_2, circle_center_z + z_spacing_centered),
+      #                          circle_radius, facecolor=self.blue))
+      # 3rd Col
+      # circle_obs.append(Circle((circle_center_y + col_3, circle_center_z + z_spacing_centered),
+      #                          circle_radius, facecolor=self.blue))
+      # Create Offset Obstacles
+      # Left of 1st Col
+      circle_obs.append(Circle((circle_center_y - y_spacing_l - 1, circle_center_z + z_spacing_offset + 1),
+                               0.5, facecolor=self.red))
+      # Right of 1st Col
+      circle_obs.append(Circle((circle_center_y + y_spacing_r, circle_center_z - z_spacing_offset),
+                               circle_radius, facecolor=self.red))
+      # Right of 2nd Col
+      # circle_obs.append(Circle((circle_center_y + col_2 + y_spacing_r, circle_center_z + z_spacing_offset),
+      #                          circle_radius, facecolor=self.red))
+      # Right of 3rd Col
+      # circle_obs.append(Circle((circle_center_y + col_3 + y_spacing_r, circle_center_z + z_spacing_offset),
+      #                          circle_radius, facecolor=self.red))
+      circle_center_z = circle_center_z + z_spacing_centered
 
+    # Plot Obstacles
+    for obs in circle_obs:
+      ax.add_patch(obs)
 
-
+    return circle_obs

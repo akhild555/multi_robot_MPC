@@ -158,6 +158,18 @@ class QuadrotorRobber(object):
 
     # pass
 
+  def add_obstacle_constraint(self, prog, x, x_des, N, obstacles):
+    margin = 0.5
+    for i in range(N):
+      y = x[i][0] + x_des[0]
+      z = x[i][1] + x_des[1]
+      quad_loc = np.array([y, z])
+      for obstacle in obstacles:
+        obs_center = np.array(obstacle.center)
+        obs_radius = obstacle.radius
+        dist = np.linalg.norm(quad_loc - obs_center)
+        prog.AddConstraint(dist >= obs_radius + margin)
+
   def add_dynamics_constraint(self, prog, x, x_des, u, N, T):
     # TODO: impose dynamics constraint.
     # Use AddLinearEqualityConstraint(expr, value)
@@ -220,7 +232,7 @@ class QuadrotorRobber(object):
     prog.AddQuadraticCost(expr)
 
   # def compute_mpc_feedback(self, x_current, x_js, x_des):
-  def compute_mpc_feedback(self, x_current, x_des):
+  def compute_mpc_feedback(self, x_current, x_des, obstacles):
     '''
     This function computes the MPC controller input u
     '''
@@ -245,12 +257,13 @@ class QuadrotorRobber(object):
     #self.add_angular_velocity_constraint(prog, x, x_des, N)
     #self.add_acceleration_constraint(prog, x, x_des, N)
     #self.add_angular_acceleration_constraint(prog, x, x_des, N)
+    self.add_obstacle_constraint(prog, x, x_des, N, obstacles)
     self.add_dynamics_constraint(prog, x, x_des, u, N, T)
     # self.add_cost(prog, x, x_js, x_des, u, N)
     self.add_cost(prog, x, u, N)
 
     # Solve the QP
-    solver = OsqpSolver()
+    solver = SnoptSolver()
     result = solver.Solve(prog)
 
     u_mpc = np.zeros(2)

@@ -60,6 +60,15 @@ def create_animation(x, x_des, tf, n_agents = 1, n_frames = 60):
     # ax.set_ylim(z_min, z_max)
     # ax.set_aspect('equal')
 
+    # # Map 3: Symmetric Maze
+    y_max = 7.5
+    y_min = 0
+    z_max = 35
+    z_min = 0
+    ax.set_xlim(y_min, y_max)
+    ax.set_ylim(z_min, z_max)
+    ax.set_aspect('equal')
+
     #n_frames = round(x.shape[1]/10)
     # noinspection PyTypeChecker
     frame_idx = [round(x) for x in np.linspace(0, x_des.shape[1]-1, n_frames).tolist()]
@@ -89,8 +98,9 @@ def create_animation(x, x_des, tf, n_agents = 1, n_frames = 60):
                 key = 0
                 color = 'g'
 
+            # environment().map_0(ax) # Map 0
             # environment().map_1(ax) # Map 1
-            # environment().map_2(ax) # Map 2
+            environment().map_3(ax) # Map 2
             ax.plot(x_d_anim[key, i, 0], x_d_anim[key, i, 1], color+'*', label='desired position')
             ax.plot(x_anim[n, 0:i + 1, 0], x_anim[n, 0:i + 1, 1], color+'--', label='actual trajectory')
 

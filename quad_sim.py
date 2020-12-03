@@ -34,11 +34,11 @@ def robber_desired_pos(cop_center, extents):
 
     return furthest_point
 
-def robber_sim(x_robber, quad_robber, x_des, dt):
+def robber_sim(x_robber, quad_robber, x_des, dt, obstacles):
 
     current_x_robber = x_robber[-1]
 
-    current_u_cmd_robber = quad_robber.compute_mpc_feedback(current_x_robber, x_des)
+    current_u_cmd_robber = quad_robber.compute_mpc_feedback(current_x_robber, x_des, obstacles)
     current_u_robber_real = np.clip(current_u_cmd_robber, quad_robber.umin, quad_robber.umax)
 
     # Autonomous ODE for constant inputs to work with solve_ivp
@@ -50,11 +50,11 @@ def robber_sim(x_robber, quad_robber, x_des, dt):
 
     return sol_rob.y[:, -1], current_u_cmd_robber
 
-def cop_sim(x_cop, quad_cop, x_des, xjs, dt):
+def cop_sim(x_cop, quad_cop, x_des, xjs, dt, obstacles):
 
     current_x_cop = x_cop[-1].copy()
 
-    current_u_cmd_cop = quad_cop.compute_mpc_feedback(current_x_cop, x_des, xjs)
+    current_u_cmd_cop = quad_cop.compute_mpc_feedback(current_x_cop, x_des, xjs, obstacles)
 
     current_u_cop_real = np.clip(current_u_cmd_cop, quad_cop.umin, quad_cop.umax)
 
@@ -67,7 +67,7 @@ def cop_sim(x_cop, quad_cop, x_des, xjs, dt):
 
     return sol_cop.y[:, -1], current_u_cmd_cop
 
-def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops = 2):
+def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops, obstacles):
     # Simulates a stabilized maneuver on the 2D quadrotor
     # system, with an initial value of x0
     t0 = 0.0
@@ -114,7 +114,7 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
         x_cop_des.append(np.array([x_robber[-1][0], x_robber[-1][1], 0, 0, 0, 0]))
 
         # Compute MPC for robber
-        sol_rob, u_cmd_rob = robber_sim(x_robber, quad_robber, x_rob_des[-1], dt)
+        sol_rob, u_cmd_rob = robber_sim(x_robber, quad_robber, x_rob_des[-1], dt, obstacles)
         x_robber.append(sol_rob)
         u_robber.append(u_cmd_rob)
 
@@ -129,7 +129,7 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops 
                 if not i==j:
                     xjs.append(xj_curr[j])
             # print(type(x_cop_des))
-            sol_cop, u_cmd_cop = cop_sim(x_cops[i], quad_cops[i], x_cop_des[-1], xjs, dt)
+            sol_cop, u_cmd_cop = cop_sim(x_cops[i], quad_cops[i], x_cop_des[-1], xjs, dt, obstacles)
             x_cops_current[i] = x_cops[i][-1][0:2]
             x_cops[i].append(sol_cop)
             u_cops[i].append(u_cmd_cop)

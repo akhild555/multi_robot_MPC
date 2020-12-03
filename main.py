@@ -22,6 +22,10 @@ from quadrotor import Quadrotor
 from quadrotor_robber import QuadrotorRobber
 from quadrotor_centralized import QuadrotorCentralized
 
+import environment_manager
+importlib.reload(environment_manager)
+from environment_manager import Map
+
 """
 Load in the animation function
 """
@@ -29,6 +33,12 @@ import create_animation
 
 importlib.reload(create_animation)
 from create_animation import create_animation
+
+# Map
+ax = plt.axes()
+plt.close()
+environment = Map  # Initialize Map Class
+obstacles = environment().map_3(ax)
 
 # Weights of LQR cost
 R = np.eye(2);
@@ -57,9 +67,9 @@ quad_cops = [quadrotor0, quadrotor1, quadrotor2]
 
 # initial states of quadrotors
 # x0 = np.array([0.5, 0.5, 0, 1, 1, 0])
-x0_0 = np.array([0.5, 0.5, 0, 0, 0, 0])
-x1_0 = np.array([0.75, 0.75, 0, 0, 0, 0])
-x2_0 = np.array([-1, 1, 0, 0, 0, 0])
+x0_0 = np.array([3, 0.5, 0, 0, 0, 0])
+x1_0 = np.array([3, 0.75, 0, 0, 0, 0])
+x2_0 = np.array([0, 1, 0, 0, 0, 0])
 # x3_0 = np.array([-2.5, 1, 0, 1, 1, 0])
 
 x0_cops = [x0_0, x1_0, x2_0]
@@ -67,11 +77,11 @@ x0_robber = np.array([-3.5, 1, 0, 0, 0, 0])
 
 # simulate quadrotors
 # x, u, t = simulate_quadrotor(x0, tf, quad_ctrls, num_quad)
-# x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops)
+x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops, obstacles)
 
 # Centralized MPC
-quadrotor_central = QuadrotorCentralized(Q, R, Qf)
-x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor_centralized(x0_cops, x0_robber, quadrotor_central, quad_robber, tf, num_cops)
+# quadrotor_central = QuadrotorCentralized(Q, R, Qf)
+# x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor_centralized(x0_cops, x0_robber, quadrotor_central, quad_robber, tf, num_cops)
 
 # fig1, ax1 = plt.subplots(1,1)
 # ax1.scatter(u[:, 0], u[:, 1])
