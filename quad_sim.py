@@ -128,7 +128,7 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops,
             for j in range(num_cops):
                 if not i==j:
                     xjs.append(xj_curr[j])
-            # print(type(x_cop_des))
+
             sol_cop, u_cmd_cop = cop_sim(x_cops[i], quad_cops[i], x_cop_des[-1], xjs, dt, obstacles)
             x_cops_current[i] = x_cops[i][-1][0:2]
             x_cops[i].append(sol_cop)
@@ -143,10 +143,10 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops,
             norms.append(norm)
         eps_check = all(i > eps for i in norms)
 
-        print("time: {}".format(t[-1])) # this
-        print("norms: {}".format(norms)) # this
+        print("time: {}".format(t[-1]))
+        print("norms: {}".format(norms))
         #print("cops: {}".format(x_cops[:][-1]))
-        print("desired: {}\n".format(x_cop_des[-1])) #this
+        print("desired: {}\n".format(x_cop_des[-1]))
 
     x_cops = np.array(x_cops)
     x_cop_des = np.array(x_cop_des)

@@ -258,10 +258,10 @@ class QuadrotorCentralized(object):
     for i in range(len(x_all)):
       self.add_initial_state_constraint(prog, x_all[i], x_des[i][0], x_current[i][0])
       self.add_input_saturation_constraint(prog, x_all[i], x_des[i][0], u_all[i], N)
-      #self.add_linear_velocity_constraint(prog, x_all[i], x_des[i][0], N)
-      #self.add_angular_velocity_constraint(prog, x_all[i], x_des[i][0], N)
-      #self.add_acceleration_constraint(prog, x_all[i], x_des[i][0], N)
-      #self.add_angular_acceleration_constraint(prog, x_all[i], x_des[i][0], N)
+      # self.add_linear_velocity_constraint(prog, x_all[i], x_des[i][0], N)
+      # self.add_angular_velocity_constraint(prog, x_all[i], x_des[i][0], N)
+      # self.add_acceleration_constraint(prog, x_all[i], x_des[i][0], N)
+      # self.add_angular_acceleration_constraint(prog, x_all[i], x_des[i][0], N)
       self.add_obstacle_constraint(prog, x_all[i], x_des[i][0], N, obstacles)
       self.add_dynamics_constraint(prog, x_all[i], x_des[i][0], u_all[i], N, T)
     # Add Cost
