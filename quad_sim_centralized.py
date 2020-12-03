@@ -34,11 +34,11 @@ def robber_desired_pos(cop_center, extents):
 
     return furthest_point
 
-def robber_sim(x_robber, quad_robber, x_des, dt):
+def robber_sim(x_robber, quad_robber, x_des, dt, obstacles):
 
     current_x_robber = x_robber[-1]
 
-    current_u_cmd_robber = quad_robber.compute_mpc_feedback(current_x_robber, x_des)
+    current_u_cmd_robber = quad_robber.compute_mpc_feedback(current_x_robber, x_des, obstacles)
     current_u_robber_real = np.clip(current_u_cmd_robber, quad_robber.umin, quad_robber.umax)
 
     # Autonomous ODE for constant inputs to work with solve_ivp
@@ -50,7 +50,7 @@ def robber_sim(x_robber, quad_robber, x_des, dt):
 
     return sol_rob.y[:, -1], current_u_cmd_robber
 
-def cop_sim(x_cops, quad_cops, x_des, xjs, dt, num_cops):
+def cop_sim(x_cops, quad_cops, x_des, xjs, dt, num_cops, obstacles):
     # print(x_cops)
     # print(len(x_cops))
 
@@ -59,7 +59,7 @@ def cop_sim(x_cops, quad_cops, x_des, xjs, dt, num_cops):
     for i in range(num_cops):
         current_x_cops.append([x_cops[i][-1]])
 
-    current_u_cmd_cops = quad_cops.compute_mpc_feedback(current_x_cops, x_des, xjs) # Returns 3x2 array
+    current_u_cmd_cops = quad_cops.compute_mpc_feedback(current_x_cops, x_des, xjs, obstacles) # Returns 3x2 array
 
     current_u_cops_real = np.clip(current_u_cmd_cops, quad_cops.umin, quad_cops.umax)
 
@@ -81,7 +81,7 @@ def cop_sim(x_cops, quad_cops, x_des, xjs, dt, num_cops):
 
     return sol_cops, current_u_cmd_cops # sol_cops: List of arrays, current_u_cmd: 3x2 array
 
-def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops = 2):
+def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops, obstacles):
     # Simulates a stabilized maneuver on the 2D quadrotor
     # system, with an initial value of x0
     t0 = 0.0
@@ -128,7 +128,7 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
         x_cop_des.append(np.array([x_robber[-1][0], x_robber[-1][1], 0, 0, 0, 0]))
 
         # Compute MPC for robber
-        sol_rob, u_cmd_rob = robber_sim(x_robber, quad_robber, x_rob_des[-1], dt)
+        sol_rob, u_cmd_rob = robber_sim(x_robber, quad_robber, x_rob_des[-1], dt, obstacles)
         x_robber.append(sol_rob)
         u_robber.append(u_cmd_rob)
 
@@ -147,7 +147,7 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
         x_cops_des = [[x_cop_des[-1]]]*num_cops # List of lists of arrays
         # a=x_cops_des[-3:] # Returns list of lists of arrays
         # x_cops list of lists of arrays
-        sol_cops, u_cmd_cops = cop_sim(x_cops, quad_cops, x_cops_des[-3:], xjs, dt, num_cops)
+        sol_cops, u_cmd_cops = cop_sim(x_cops, quad_cops, x_cops_des[-3:], xjs, dt, num_cops, obstacles)
 
         for i in range(num_cops):
           x_cops_current[i] = x_cops[i][-1][0:2]

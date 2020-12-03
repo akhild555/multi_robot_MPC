@@ -117,7 +117,7 @@ class Map(object):
     circle_radius = 0.25
     # Initialize Starting Obstacles
     circle_obs = [Circle((circle_init_y, circle_init_z), circle_radius, facecolor=self.blue),
-                  Circle((circle_init_y + col_2, circle_init_z + 2), circle_radius, facecolor=self.blue)]
+                  Circle((circle_init_y + col_2, circle_init_z + 1), 0.4, facecolor=self.blue)]
     circle_center_y = circle_init_y
     circle_center_z = circle_init_z
     # Generate List of All Obstacles
@@ -134,7 +134,7 @@ class Map(object):
       #                          circle_radius, facecolor=self.blue))
       # Create Offset Obstacles
       # Left of 1st Col
-      circle_obs.append(Circle((circle_center_y - y_spacing_l - 1, circle_center_z + z_spacing_offset + 1),
+      circle_obs.append(Circle((circle_center_y - y_spacing_l - 1, circle_center_z + z_spacing_offset),
                                0.5, facecolor=self.red))
       # Right of 1st Col
       circle_obs.append(Circle((circle_center_y + y_spacing_r, circle_center_z - z_spacing_offset),

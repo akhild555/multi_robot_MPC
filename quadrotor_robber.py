@@ -41,6 +41,8 @@ class QuadrotorRobber(object):
 
     self.D = 0.5
 
+    self.obstacle_margin = 0.5
+
   def x_d(self):
     # Nomial state
     return np.array([0, 0, 0, 0, 0, 0])
@@ -159,7 +161,6 @@ class QuadrotorRobber(object):
     # pass
 
   def add_obstacle_constraint(self, prog, x, x_des, N, obstacles):
-    margin = 0.5
     for i in range(N):
       y = x[i][0] + x_des[0]
       z = x[i][1] + x_des[1]
@@ -168,7 +169,7 @@ class QuadrotorRobber(object):
         obs_center = np.array(obstacle.center)
         obs_radius = obstacle.radius
         dist = np.linalg.norm(quad_loc - obs_center)
-        prog.AddConstraint(dist >= obs_radius + margin)
+        prog.AddConstraint(dist >= obs_radius + self.obstacle_margin)
 
   def add_dynamics_constraint(self, prog, x, x_des, u, N, T):
     # TODO: impose dynamics constraint.

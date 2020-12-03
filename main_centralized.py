@@ -12,6 +12,11 @@ importlib.reload(quadrotor)
 importlib.reload(quadrotor_robber)
 from quadrotor import Quadrotor
 from quadrotor_robber import QuadrotorRobber
+
+import environment_manager
+importlib.reload(environment_manager)
+from environment_manager import Map
+
 """
 Load in the animation function
 """
@@ -25,8 +30,13 @@ R = np.eye(2);
 Q = np.diag([1, 1, 0, 1, 1, 1])
 Qf = Q
 
+# Map
+ax = plt.axes()
+plt.close()
+environment = Map  # Initialize Map Class
+obstacles = environment().map_3(ax)
+
 # End time of the simulation
-tf = 15
 tf = 25
 
 
@@ -48,7 +58,7 @@ x0_robber = np.array([-3.5, 1, 0, 0, 0, 0])
 
 # Centralized MPC
 quadrotor_central = QuadrotorCentralized(Q, R, Qf)
-x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor_centralized(x0_cops, x0_robber, quadrotor_central, quad_robber, tf, num_cops)
+x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor_centralized(x0_cops, x0_robber, quadrotor_central, quad_robber, tf, num_cops, obstacles)
 
 # fig1, ax1 = plt.subplots(1,1)
 # ax1.scatter(u[:, 0], u[:, 1])

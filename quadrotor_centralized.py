@@ -41,6 +41,8 @@ class QuadrotorCentralized(object):
 
     self.D = 0.5
 
+    self.obstacle_margin = 0.5
+
   def x_d(self):
     # Nomial state
     return np.array([0, 0, 0, 0, 0, 0])
@@ -165,6 +167,17 @@ class QuadrotorCentralized(object):
   #       dist = (x[0][i] - x[1][j])**2
   #       prog.AddConstraint(dist, D, np.inf, x )
 
+  def add_obstacle_constraint(self, prog, x, x_des, N, obstacles):
+    for i in range(N):
+      y = x[i][0] + x_des[0]
+      z = x[i][1] + x_des[1]
+      quad_loc = np.array([y, z])
+      for obstacle in obstacles:
+        obs_center = np.array(obstacle.center)
+        obs_radius = obstacle.radius
+        dist = np.linalg.norm(quad_loc - obs_center)
+        prog.AddConstraint(dist >= obs_radius + self.obstacle_margin)
+
   def add_dynamics_constraint(self, prog, x, x_des, u, N, T):
     # TODO: impose dynamics constraint.
     # Use AddLinearEqualityConstraint(expr, value)
@@ -207,7 +220,7 @@ class QuadrotorCentralized(object):
     prog.AddQuadraticCost(expr)
 
   # def compute_mpc_feedback(self, x_current, x_js, x_des):
-  def compute_mpc_feedback(self, x_current, x_des, x_js):
+  def compute_mpc_feedback(self, x_current, x_des, x_js, obstacles):
     '''
     This function computes the MPC controller input u
     '''
@@ -249,11 +262,12 @@ class QuadrotorCentralized(object):
       #self.add_angular_velocity_constraint(prog, x_all[i], x_des[i][0], N)
       #self.add_acceleration_constraint(prog, x_all[i], x_des[i][0], N)
       #self.add_angular_acceleration_constraint(prog, x_all[i], x_des[i][0], N)
+      self.add_obstacle_constraint(prog, x_all[i], x_des[i][0], N, obstacles)
       self.add_dynamics_constraint(prog, x_all[i], x_des[i][0], u_all[i], N, T)
     # Add Cost
     self.add_cost(prog, x_all, u_all, N)
     # Solve the QP
-    solver = OsqpSolver()
+    solver = SnoptSolver()
     result = solver.Solve(prog)
 
     u_mpc = np.zeros((3,2))
