@@ -31,7 +31,7 @@ from create_animation import create_animation
 y_min = 0
 y_max = 7.5
 z_min = 0
-z_max = 7.5 #35
+z_max = 7.5
 
 # Map
 ax = plt.axes()
