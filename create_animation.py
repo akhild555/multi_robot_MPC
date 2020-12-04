@@ -8,7 +8,7 @@ import environment_manager
 importlib.reload(environment_manager)
 from environment_manager import Map
 
-def create_animation(x, x_des, tf, obstacles, n_agents = 1, n_frames = 60):
+def create_animation(x, x_des, tf, obstacles, n_agents = 1, dt = 0.01, n_frames = 60):
     # Sample desired trajectory
     #n_samples = 1000
     #t_samples = np.linspace(0.0, tf, n_samples)
@@ -19,6 +19,8 @@ def create_animation(x, x_des, tf, obstacles, n_agents = 1, n_frames = 60):
 
     from matplotlib import rc
     rc('animation', html='jshtml')
+
+    n_frames = max(2, int(tf / (30 * dt)))
 
     fig = plt.figure(figsize=(8,6))
     ax = plt.axes()
@@ -127,4 +129,4 @@ def create_animation(x, x_des, tf, obstacles, n_agents = 1, n_frames = 60):
 
         return ax
 
-    return animation.FuncAnimation(fig, frame, interval=10, frames=n_frames, blit=False, repeat=True), fig
+    return animation.FuncAnimation(fig, frame, interval=1, frames=n_frames, blit=False, repeat=True), fig
