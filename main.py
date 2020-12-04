@@ -5,16 +5,20 @@ import matplotlib; matplotlib.use("TkAgg")
 
 # Import Simulator
 from quad_sim import simulate_quadrotor
+from quad_sim_centralized import simulate_quadrotor_centralized
 import initial_states
 
 # Load Quadrotor Objects
 import quadrotor
+import quadrotor_centralized
 import quadrotor_robber
 
 #Reload Modules to Use Latest Code
 importlib.reload(quadrotor)
+importlib.reload(quadrotor_centralized)
 importlib.reload(quadrotor_robber)
 from quadrotor import Quadrotor
+from quadrotor_centralized import QuadrotorCentralized
 from quadrotor_robber import QuadrotorRobber
 
 # Load Environment Manager
@@ -46,16 +50,24 @@ Q = np.diag([1, 1, 0, 1, 1, 1])
 Qf = Q
 
 # End time of the simulation
-tf = 25
+tf = 5
 
 # Number of Cop Quadrotors
 num_cops = 3
 
 # Construct Cop Quadrotor Controllers
-quadrotor0 = Quadrotor(Q, R, Qf)
-quadrotor1 = Quadrotor(Q, R, Qf)
-quadrotor2 = Quadrotor(Q, R, Qf)
-quad_cops = [quadrotor0, quadrotor1, quadrotor2]
+# quadrotor0 = Quadrotor(Q, R, Qf)
+# quadrotor1 = Quadrotor(Q, R, Qf)
+# quadrotor2 = Quadrotor(Q, R, Qf)
+# quad_cops = [quadrotor0, quadrotor1, quadrotor2]
+
+# Distributed MPC Quadrotor Objects
+quad_cops = []
+for i in range(num_cops):
+  quad_cops.append(Quadrotor(Q, R, Qf))
+
+# Centralized Quadrotor Objects
+quadrotor_central = QuadrotorCentralized(Q, R, Qf)
 
 # Construct Robber Quadrotor Controller
 quad_robber = QuadrotorRobber(Q, R, Qf)
@@ -65,18 +77,44 @@ quad_robber = QuadrotorRobber(Q, R, Qf)
 # x0_cops = initial_states.cops_fixed() # Fixed Cop Initializations
 # x0_robber = initial_states.robber_fixed() # Fixed Robber Initialization
 # Random Initializations
-x0_cops = initial_states.cops_random(obstacles, y_min, y_max, z_min, z_max) # Random Cop Initializations
-x0_robber = initial_states.robber_random(x0_cops, obstacles, y_min, y_max, z_min, z_max) # Random Robber Initialization
+x0_cops = initial_states.cops_random(obstacles, num_cops, y_min, y_max, z_min, z_max) # Random Cop Initializations
+x0_robber = initial_states.robber_random(x0_cops, obstacles, num_cops, y_min, y_max, z_min, z_max) # Random Robber Initialization
 x0_robber_des = initial_states.init_robber_des(obstacles, y_min, y_max, z_min, z_max)
 
 # Simulate Quadrotors
+# Distributed MPC
 x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber,
                                                                              tf, num_cops, obstacles, x0_robber_des)
-
 # Create Animation
-x_out = np.stack((x_cops[0], x_cops[1], x_cops[2], x_robber), axis=0)
+x_out = x_cops[0]
+for i in range(1,num_cops):
+  x_out = np.stack((x_out, x_cops[i]), axis=0)
+x_out = np.stack((x_out, x_robber), axis=0)
+# x_out = np.stack((x_cops[0], x_cops[1], x_cops[2], x_robber), axis=0)
 x_d_out = np.stack((x_cop_d, x_rob_d), axis=0)
 anim, fig2 = create_animation(x_out, x_d_out, t, obstacles, num_cops + 1)
 
 anim
-plt.show()
+fig2.show()
+
+# Simulate Quadrotors
+# Centralized MPC
+x_cops_c, x_cop_d_c, u_cops_c, x_robber_c, x_rob_d_c, u_robber_c, t_c = simulate_quadrotor_centralized(x0_cops, x0_robber, quadrotor_central,
+                                                                                         quad_robber, tf, num_cops, obstacles, x0_robber_des)
+
+# Create Animation
+x_out_c = x_cops_c[0]
+for i in range(1,num_cops):
+  x_out_c = np.stack((x_out_c, x_cops_c[i]), axis=0)
+x_out_c = np.stack((x_out_c, x_robber_c), axis=0)
+# x_out_c = np.stack((x_cops_c[0], x_cops_c[1], x_cops_c[2], x_robber_c), axis=0)
+x_d_out_c = np.stack((x_cop_d_c, x_rob_d_c), axis=0)
+anim_c, fig3 = create_animation(x_out_c, x_d_out_c, t_c, obstacles, num_cops + 1)
+
+anim_c
+fig3.show()
+
+
+
+# anim
+# plt.show()
