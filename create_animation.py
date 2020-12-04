@@ -8,7 +8,7 @@ import environment_manager
 importlib.reload(environment_manager)
 from environment_manager import Map
 
-def create_animation(x, x_des, tf, obstacles, n_agents = 1, dt = 0.01, n_frames = 60):
+def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames = 60):
     # Sample desired trajectory
     #n_samples = 1000
     #t_samples = np.linspace(0.0, tf, n_samples)
@@ -20,6 +20,7 @@ def create_animation(x, x_des, tf, obstacles, n_agents = 1, dt = 0.01, n_frames 
     from matplotlib import rc
     rc('animation', html='jshtml')
 
+    tf = t[-1]
     n_frames = max(2, int(tf / (30 * dt)))
 
     fig = plt.figure(figsize=(8,6))
@@ -76,10 +77,11 @@ def create_animation(x, x_des, tf, obstacles, n_agents = 1, dt = 0.01, n_frames 
     frame_idx = [round(x) for x in np.linspace(0, x_des.shape[1]-1, n_frames).tolist()]
     x_anim = np.zeros((n_agents, n_frames, 6))
     x_d_anim = np.zeros((2, n_frames, 6))
+    t_anim = np.zeros((n_frames))
     for i in range(n_frames):
         x_anim[:, i, :] = x[:, frame_idx[i], :]
         x_d_anim[:, i, :] = x_des[:, frame_idx[i], :]
-
+        t_anim[i] = t[frame_idx[i]]
 
     # a = length of quadrotor
     a = 0.25
@@ -126,7 +128,8 @@ def create_animation(x, x_des, tf, obstacles, n_agents = 1, dt = 0.01, n_frames 
         ax.set_ylabel('z (m)')
         ax.set_aspect('equal')
         ax.legend(loc='upper left')
+        ax.text(0.9, 0.02, "time: {:.2f}s".format(float(t_anim[i])), horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
 
         return ax
 
-    return animation.FuncAnimation(fig, frame, interval=1, frames=n_frames, blit=False, repeat=True), fig
+    return animation.FuncAnimation(fig, frame, interval=30, frames=n_frames, blit=False, repeat=True), fig
