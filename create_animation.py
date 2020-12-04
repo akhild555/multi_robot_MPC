@@ -62,9 +62,9 @@ def create_animation(x, x_des, tf, obstacles, n_agents = 1, n_frames = 60):
 
     # # Map 3: Symmetric Maze
     y_min = 0
-    y_max = 7.5
+    y_max = 10
     z_min = 0
-    z_max = 7.5  # 35
+    z_max = 10  # 35
     ax.set_xlim(y_min, y_max)
     ax.set_ylim(z_min, z_max)
     ax.set_aspect('equal')
