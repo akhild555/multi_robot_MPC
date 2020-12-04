@@ -20,6 +20,21 @@ def closest_cop(cop_positions, robber_position):
 
     return close_cop
 
+def furthest_point_from_cop(close_cop, env_extents):
+    # initialize
+    dist = -1
+    furthest_point = np.array([0, 0])
+
+    # calculate furthest point from cop in environment
+    for i in env_extents:
+        dist_new = (((i[0] - close_cop[0]) ** 2) + ((i[1] - close_cop[1]) ** 2) ** (1 / 2))
+        if dist_new > dist:  # and dist_new < 10:
+            dist = dist_new
+            furthest_point = i
+    furthest_point = np.array([furthest_point[0], furthest_point[1], 0, 0, 0, 0])
+
+    return furthest_point
+
 def robber_desired_pos(x_rob_des, furthest_point, obstacles):
     margin = 0.5
 
@@ -110,8 +125,8 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
     x_rob_des_list = []
 
     # robber desired location (furthest point in map from intialization)
-    distances = np.linalg.norm(np.ones((4, 2)) * x_rob_des[0:2] - env_extents, axis=1)
-    furthest_point = env_extents[np.argmax(distances)]
+    # distances = np.linalg.norm(np.ones((4, 2)) * x_rob_des[0:2] - env_extents, axis=1)
+    # furthest_point = env_extents[np.argmax(distances)]
 
     # cops setup
     x_cops = []
@@ -132,6 +147,9 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
 
         # get position of closest cop
         close_cop = closest_cop(x_cops_current, x_robber[-1])
+
+        # get furthest point from closest cop
+        furthest_point = furthest_point_from_cop(close_cop, env_extents)
 
         # static robber desired position
         # x_rob_des_list.append(x0_rob_des)
