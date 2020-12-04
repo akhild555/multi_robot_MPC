@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.linalg import norm
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon, Circle, Rectangle, Ellipse
 import matplotlib.pyplot as plt
@@ -152,50 +153,83 @@ class Map(object):
 
     return circle_obs
 
-  # # Map 4: Random Small Symmetric Maze
+  # Map 4: Random Small Symmetric Maze
+  def map_4(self, ax, y_min, y_max, z_min, z_max):
+    num_obs = 4
+
+    circle_centers_y = np.random.uniform(y_min, y_max, num_obs)
+    circle_centers_z = np.random.uniform(z_min, z_max, num_obs)
+    circle_radii = np.random.uniform(0, 2, num_obs)
+    circle_obs = []
+    obs_safe_pos = []
+    dist_bw_obs = []
+    # Create Obstacles
+    for i in range(num_obs):
+      circle_obs.append(Circle((circle_centers_y[i], circle_centers_z[i]), circle_radii[i], facecolor=self.blue))
+      # Determine Safe Distance Outside Obstacles
+      # obs_safe_pos.append(circle_obs[i].radius + 0.05)
+    # # Calculate Initial Distances Between Obstacles
+    # for i in range(num_obs - 1):
+    #   for j in range(i+1,num_obs):
+    #     if j < num_obs:
+    #       dist_bw_obs.append(norm(np.array(circle_obs[i].center) - np.array(circle_obs[j].center)))
+
+    obs0_safe_pos = circle_obs[0].radius + 0.05
+    obs1_safe_pos = circle_obs[1].radius + 0.05
+    obs2_safe_pos = circle_obs[2].radius + 0.05
+    obs3_safe_pos = circle_obs[3].radius + 0.05
+
+    # Distances
+    d_01 = np.linalg.norm(np.array(circle_obs[0].center) - np.array(circle_obs[1].center))  # Distance Between Obstacle 0 & Obstacle 1
+    d_02 = np.linalg.norm(np.array(circle_obs[0].center) - np.array(circle_obs[2].center))  # Distance Between Obstacle 0 & Obstacle 2
+    d_03 = np.linalg.norm(np.array(circle_obs[0].center) - np.array(circle_obs[3].center))  # Distance Between Obstacle 0 & Obstacle 3
+    d_12 = np.linalg.norm(np.array(circle_obs[1].center) - np.array(circle_obs[2].center))  # Distance Between Obstacle 1 & Obstacle 2
+    d_13 = np.linalg.norm(np.array(circle_obs[1].center) - np.array(circle_obs[3].center))  # Distance Between Obstacle 1 & Obstacle 3
+    d_23 = np.linalg.norm(np.array(circle_obs[2].center) - np.array(circle_obs[3].center))  # Distance Between Obstacle 2 & Obstacle 3
+
+    # if any(i > j for i, j in zip(a, b)):
+
+    if d_01 < (obs0_safe_pos + obs1_safe_pos) or d_02 < (obs0_safe_pos + obs2_safe_pos) or d_03 < (obs0_safe_pos + obs3_safe_pos) \
+      or d_12 < (obs1_safe_pos + obs2_safe_pos) or d_13 < (obs1_safe_pos + obs3_safe_pos) or d_23 < (obs2_safe_pos + obs3_safe_pos):
+
+      while d_01 < (obs0_safe_pos + obs1_safe_pos) or d_02 < (obs0_safe_pos + obs2_safe_pos) or d_03 < (obs0_safe_pos + obs3_safe_pos) \
+          or d_12 < (obs1_safe_pos + obs2_safe_pos) or d_13 < (obs1_safe_pos + obs3_safe_pos) or d_23 < (obs2_safe_pos + obs3_safe_pos):
+
+        circle_centers_y = np.random.uniform(y_min, y_max, num_obs)
+        circle_centers_z = np.random.uniform(z_min, z_max, num_obs)
+        circle_radii = np.random.uniform(0.5, 2, num_obs)
+        circle_obs = []
+        # Create Obstacles
+        for i in range(num_obs):
+          circle_obs.append(Circle((circle_centers_y[i], circle_centers_z[i]), circle_radii[i], facecolor=self.blue))
+        obs0_safe_pos = circle_obs[0].radius + 0.05
+        obs1_safe_pos = circle_obs[1].radius + 0.05
+        obs2_safe_pos = circle_obs[2].radius + 0.05
+        obs3_safe_pos = circle_obs[3].radius + 0.05
+        # Distances
+        d_01 = np.linalg.norm(np.array(circle_obs[0].center) - np.array(circle_obs[1].center))  # Distance Between Obstacle 0 & Obstacle 1
+        d_02 = np.linalg.norm(np.array(circle_obs[0].center) - np.array(circle_obs[2].center))  # Distance Between Obstacle 0 & Obstacle 2
+        d_03 = np.linalg.norm(np.array(circle_obs[0].center) - np.array(circle_obs[3].center))  # Distance Between Obstacle 0 & Obstacle 3
+        d_12 = np.linalg.norm(np.array(circle_obs[1].center) - np.array(circle_obs[2].center))  # Distance Between Obstacle 1 & Obstacle 2
+        d_13 = np.linalg.norm(np.array(circle_obs[1].center) - np.array(circle_obs[3].center))  # Distance Between Obstacle 1 & Obstacle 3
+        d_23 = np.linalg.norm(np.array(circle_obs[2].center) - np.array(circle_obs[3].center))  # Distance Between Obstacle 2 & Obstacle 3
+
+    # # Plot Obstacles
+    # for obs in circle_obs:
+    #   ax.add_patch(obs)
+
+    return circle_obs
+
   # def map_4(self, ax, y_min, y_max, z_min, z_max):
   #   num_obs = 4
-  #   # Initialize Distances
-  #   d_01 = 0  # Distance Between Obstacle 0 & Obstacle 1
-  #   d_02 = 0  # Distance Between Obstacle 0 & Obstacle 2
-  #   d_03 = 0  # Distance Between Obstacle 0 & Obstacle 3
-  #   d_12 = 0  # Distance Between Obstacle 1 & Obstacle 2
-  #   d_13 = 0  # Distance Between Obstacle 1 & Obstacle 3
-  #   d_23 = 0  # Distance Between Obstacle 2 & Obstacle 3
-  #   while d_01 < 0.75 or d_02 < 0.75 or d_12 < 0.75 or d_03 < 0.75 or d_13 < 0.75 or d_23 < 0.75:
-  #     circle_centers_y = np.random.uniform(y_min, y_max, num_obs)
-  #     circle_centers_z = np.random.uniform(z_min, z_max, num_obs)
-  #     circle_radii = np.random.uniform(0, 5, num_obs)
-  #     circle_obs = []
-  #     # Create Obstacles
-  #     for i in range(num_obs):
-  #       circle_obs.append(Circle((circle_centers_y[i], circle_centers_z[i]), circle_radii[i], facecolor=self.blue))
-  #     # Distance to Obstacles
-  #     for i in range(num_obs):
-  #       obs_center = np.array(obs.center)
-  #       obs_radius = obs.radius
-  #       obs_safe_pos = obs_radius + 0.5
-  #       dist_robber = 0
-  #
-  #       while dist_robber < obs_safe_pos:
-  #         dist_robber = np.linalg.norm(robber_loc0 - obs_center)
-  #         if dist_robber < obs_safe_pos:
-  #           # Cop 0 Initial Position
-  #           x0_rob_y0 = np.random.uniform(y_min, y_max)
-  #           x0_rob_z0 = np.random.uniform(z_min, z_max)
-  #           robber_loc0 = np.array([x0_rob_y0, x0_rob_z0])
-  #
-  #     x0_robber = np.array([x0_rob_y0, x0_rob_z0, 0, 0, 0, 0])
-  #     # Distances
-  #     d_r0 = np.linalg.norm(x0_robber - x0_0)
-  #     d_r1 = np.linalg.norm(x0_robber - x1_0)
-  #     d_r2 = np.linalg.norm(x0_robber - x2_0)
-  #
   #   circle_centers_y = np.random.uniform(y_min, y_max, num_obs)
   #   circle_centers_z = np.random.uniform(z_min, z_max, num_obs)
-  #   circle_radii = np.random.uniform(0, 5, num_obs)
+  #   circle_radii = np.random.uniform(0, 2, num_obs)
   #
-  #
+  #   circle_obs = []
+  #   # Create Obstacles
+  #   for i in range(num_obs):
+  #     circle_obs.append(Circle((circle_centers_y[i], circle_centers_z[i]), circle_radii[i], facecolor=self.blue))
   #
   #
   #   # # Plot Obstacles
@@ -203,24 +237,6 @@ class Map(object):
   #   #   ax.add_patch(obs)
   #
   #   return circle_obs
-
-  def map_4(self, ax, y_min, y_max, z_min, z_max):
-    num_obs = 4
-    circle_centers_y = np.random.uniform(y_min, y_max, num_obs)
-    circle_centers_z = np.random.uniform(z_min, z_max, num_obs)
-    circle_radii = np.random.uniform(0, 2, num_obs)
-
-    circle_obs = []
-    # Create Obstacles
-    for i in range(num_obs):
-      circle_obs.append(Circle((circle_centers_y[i], circle_centers_z[i]), circle_radii[i], facecolor=self.blue))
-
-
-    # # Plot Obstacles
-    # for obs in circle_obs:
-    #   ax.add_patch(obs)
-
-    return circle_obs
 
   def map_plot(self, ax, obstacles):
     # Plot Obstacles

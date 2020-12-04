@@ -26,7 +26,7 @@ def robber_desired_pos(cop_center, extents):
 
     # calculate furthest point from cop in environment
     for i in extents:
-        dist_new = (((i[0] - cop_center[0]) ** 2) +  ((i[1] - cop_center[1]) ** 2) ** (1/2))
+        dist_new = (((i[0] - cop_center[0]) ** 2) + ((i[1] - cop_center[1]) ** 2) ** (1/2))
         if dist_new > dist: # and dist_new < 10:
             dist = dist_new
             furthest_point = i
@@ -96,7 +96,8 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops,
         u_cops.append([np.zeros((2,))])
 
     t = [t0]
-    eps = 1e-3
+    eps_y = 0.5
+    eps_z = 0.05
     eps_check = True
 
     while eps_check and t[-1] < tf:
@@ -136,16 +137,15 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops,
 
         t.append(t[-1] + dt)
 
-        # calculate norms for all quads
-        norms = []
+        # determine if cops captured robber
         for i in range(num_cops):
-            norm = np.linalg.norm(np.array(x_cops[i][-1][0:2]) - x_cop_des[-1][0:2])
-            norms.append(norm)
-        eps_check = all(i > eps for i in norms)
+            y_dist = x_cops[i][-1][0] - x_cop_des[-1][0]
+            z_dist = x_cops[i][-1][1] - x_cop_des[-1][1]
+            print("Distances for cop {}: y = {}, z = {}".format(i, y_dist, z_dist))
+            if eps_check:
+                eps_check = not (abs(y_dist) <= eps_y and abs(z_dist) <= eps_z)
 
         print("time: {}".format(t[-1]))
-        print("norms: {}".format(norms))
-        #print("cops: {}".format(x_cops[:][-1]))
         print("desired: {}\n".format(x_cop_des[-1]))
 
     x_cops = np.array(x_cops)

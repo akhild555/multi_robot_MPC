@@ -104,7 +104,7 @@ def robber_random(x0_cops, obstacles, y_min, y_max, z_min, z_max):
       while dist_robber < obs_safe_pos:
         dist_robber = np.linalg.norm(robber_loc0 - obs_center)
         if dist_robber < obs_safe_pos:
-          # Cop 0 Initial Position
+          # Robber Initial Position
           x0_rob_y0 = np.random.uniform(y_min, y_max)
           x0_rob_z0 = np.random.uniform(z_min, z_max)
           robber_loc0 = np.array([x0_rob_y0, x0_rob_z0])
