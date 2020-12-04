@@ -35,11 +35,14 @@ class Quadrotor(object):
     self.n_x = 6
     self.n_u = 2
 
-    self.w_x = 1
-    self.w_u = 1
-    self.w_j = 1
+    self.w_x = 3.5
+    self.w_u = 3.5
 
-    self.D = 0.5
+    self.w_y = 6
+    self.w_z = 1.5
+
+    self.D_y = 0.6
+    self.D_z = 0.1
 
     self.obstacle_margin = 0.5
 
@@ -158,14 +161,6 @@ class Quadrotor(object):
       prog.AddLinearConstraint(accel <= alpha_max)  # theta_ddot UB
       prog.AddLinearConstraint(accel >= alpha_min)  # theta_ddot LB
 
-    # pass
-
-  # def add_collision_constraint(self, x):
-  #
-  #   for i in range(x.shape[1]):
-  #     for j in range(i+1,x.shape[1]):
-  #       dist = (x[0][i] - x[1][j])**2
-  #       prog.AddConstraint(dist, D, np.inf, x )
 
   def add_obstacle_constraint(self, prog, x, x_des, N, obstacles):
     for i in range(N):
@@ -187,23 +182,7 @@ class Quadrotor(object):
     for i in range(N-1):
       val = A @ (x[i]) + B @ u[i]
       prog.AddLinearEqualityConstraint((x[i+1])-val, np.zeros(len(x[i])))
-    # pass
 
-  # def add_cost(self, prog, x, x_current, x_js, x_des, u, N):
-  #     # TODO: add cost.
-  #     expr = 0
-  #     # for x_j in x_js:
-  #     #     D_j = np.linalg.norm(x_current[:2] - x_j[:2])
-  #     #     if D_j < self.D:
-  #     #         expr += self.w_j*(D_j - self.D)**2
-  #
-  #     for i in range(N-1):
-  #         val1 = x[i].T @ self.Q @ x[i]
-  #         val2 = u[i].T @ self.R @ u[i]
-  #         expr += val1 + val2
-  #     expr += (x[N-1]-x_des).reshape(1, 6) @ self.Qf @ (x[N-1]-x_des).reshape(6, 1)
-  #     prog.AddQuadraticCost(expr[0,0])
-  #     pass
 
   # HW6 Cost
   def add_cost(self, prog, x, u, N):
@@ -212,11 +191,27 @@ class Quadrotor(object):
     for i in range(N - 1):
       val1 = x[i].T @ self.Q @ x[i]
       val2 = u[i].T @ self.R @ u[i]
-      expr += val1 + val2
-    expr += (x[N - 1]).T @ self.Qf @ x[N - 1]
+      expr += self.w_x*val1 + self.w_u*val2
+    expr += self.w_x * (x[N - 1]).T @ self.Qf @ x[N - 1]
     prog.AddQuadraticCost(expr)
 
-  # def compute_mpc_feedback(self, x_current, x_js, x_des):
+  def add_collision_cost(self, prog, x, x_current, x_js, x_des, N):
+    for i in range(1, N):
+      for x_j in x_js:
+        dist = (x_current[:2] - x_j[:2]) ** 2
+
+        curr_tar_dist = sum(x_current[:2] - x_des[:2] ** 2)
+        j_tar_dist = sum(x_j[:2] - x_des[:2] ** 2)
+
+        if dist[0] < self.D_y ** 2 and dist[1] < self.D_z ** 2:
+          expr_y = (x[i][0] - x_j[0] + x_des[0]) ** 2
+          expr_z = (x[i][1] - x_j[1] + x_des[1]) ** 2
+
+          if curr_tar_dist > j_tar_dist:
+            prog.AddQuadraticCost(self.w_y * (self.D_y ** 2 - expr_y) / 2 + self.w_z * (self.D_z ** 2 - expr_z) / 2)
+          else:
+            prog.AddQuadraticCost(self.w_y * (self.D_y ** 2 - expr_y) + self.w_z * (self.D_z ** 2 - expr_z))
+
   def compute_mpc_feedback(self, x_current, x_des, x_js, obstacles):
     '''
     This function computes the MPC controller input u
@@ -247,8 +242,8 @@ class Quadrotor(object):
     #self.add_angular_acceleration_constraint(prog, x, x_des, N)
     self.add_dynamics_constraint(prog, x, x_des, u, N, T)
     self.add_obstacle_constraint(prog, x, x_des, N, obstacles)
-    #self.add_cost(prog, x, x_current, x_js, x_des, u, N)
     self.add_cost(prog, x, u, N)
+    self.add_collision_cost(prog, x, x_current, x_js, x_des, N)
 
     # Solve the QP
     solver = SnoptSolver()
