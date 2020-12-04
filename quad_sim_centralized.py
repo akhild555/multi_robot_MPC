@@ -1,6 +1,7 @@
 import numpy as np
 from math import sin, cos, pi
 from scipy.integrate import solve_ivp
+from scipy.interpolate import interp1d
 from quadrotor_centralized import QuadrotorCentralized
 import matplotlib.pyplot as plt
 
@@ -19,20 +20,28 @@ def closest_cop(cop_positions, robber_position):
 
     return close_cop
 
-def robber_desired_pos(cop_center, extents):
-    # initialize
-    dist = -1
-    furthest_point = np.array([0,0])
+def robber_desired_pos(x_rob_des, furthest_point, obstacles):
+    margin = 0.5
 
-    # calculate furthest point from cop in environment
-    for i in extents:
-        dist_new = (((i[0] - cop_center[0]) ** 2) +  ((i[1] - cop_center[1]) ** 2) ** (1/2))
-        if dist_new > dist: # and dist_new < 10:
-            dist = dist_new
-            furthest_point = i
-    furthest_point = np.array([furthest_point[0], furthest_point[1], 0,0,0,0])
+    # interpolation function between current goal and furthest point
+    x = [x_rob_des[0], furthest_point[0]]
+    y = [x_rob_des[1], furthest_point[1]]
+    f = interp1d(x,y)
 
-    return furthest_point
+    # calculate next robber desired position using interpolation
+    xnew = x_rob_des[0] + ((furthest_point[0] - x_rob_des[0]) / 2000).item()
+    ynew = f(xnew).item()
+    new_x_rob_des = np.array([xnew, ynew])
+
+    # check that next robber desired position doesnt interfere with obstacles
+    for obs in obstacles:
+        obs_center = np.array(obs.center)
+        obs_radius = obs.radius
+        dist = np.linalg.norm(new_x_rob_des - obs_center)
+        if dist < obs_radius + margin:
+            new_x_rob_des = np.array([xnew + .1, ynew])
+
+    return new_x_rob_des
 
 def robber_sim(x_robber, quad_robber, x_des, dt, obstacles):
 
@@ -81,7 +90,7 @@ def cop_sim(x_cops, quad_cops, x_des, xjs, dt, num_cops, obstacles):
 
     return sol_cops, current_u_cmd_cops # sol_cops: List of arrays, current_u_cmd: 3x2 array
 
-def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops, obstacles):
+def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops, obstacles, x0_rob_des):
     # Simulates a stabilized maneuver on the 2D quadrotor
     # system, with an initial value of x0
     t0 = 0.0
@@ -89,15 +98,20 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
     dt = 1e-2
 
     # rectangle corners of environment
-    env_extents = np.array([[0, 0],
-                            [5, 5],
-                            [0, 5],
-                            [5, 0]])
+    env_extents = np.array([[-2, -2],
+                            [10, 10],
+                            [-2, 10],
+                            [10, -2]])
 
     # robber setup
     x_robber = [x0_robber]
     u_robber = [np.zeros((2,))]
-    x_rob_des = []
+    x_rob_des = x0_rob_des
+    x_rob_des_list = []
+
+    # robber desired location (furthest point in map from intialization)
+    distances = np.linalg.norm(np.ones((4, 2)) * x_rob_des[0:2] - env_extents, axis=1)
+    furthest_point = env_extents[np.argmax(distances)]
 
     # cops setup
     x_cops = []
@@ -118,8 +132,12 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
         # get position of closest cop
         close_cop = closest_cop(x_cops_current, x_robber[-1])
 
-        # get desired robot position based on closest cop
-        x_rob_des.append(robber_desired_pos(close_cop, env_extents))
+        # static robber desired position
+        # x_rob_des_list.append(x0_rob_des)
+
+        # moving robber desired position
+        x_rob_des = robber_desired_pos(x_rob_des, furthest_point, obstacles)
+        x_rob_des_list.append(np.array([x_rob_des[0], x_rob_des[1], 0, 0, 0, 0]))
 
         # re-initialize current positions of all cops
         x_cops_current = np.zeros((num_cops, 2))
@@ -128,7 +146,7 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
         x_cop_des.append(np.array([x_robber[-1][0], x_robber[-1][1], 0, 0, 0, 0]))
 
         # Compute MPC for robber
-        sol_rob, u_cmd_rob = robber_sim(x_robber, quad_robber, x_rob_des[-1], dt, obstacles)
+        sol_rob, u_cmd_rob = robber_sim(x_robber, quad_robber, x_rob_des_list[-1], dt, obstacles)
         x_robber.append(sol_rob)
         u_robber.append(u_cmd_rob)
 
@@ -171,9 +189,9 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
     x_cops = np.array(x_cops)
     x_cop_des = np.array(x_cop_des)
     u_cops = np.array(u_cops)
-    x_rob_des = np.array(x_rob_des)
+    x_rob_des_list = np.array(x_rob_des_list)
     t = np.array(t)
-    return x_cops, x_cop_des, u_cops, x_robber, x_rob_des, u_robber, t
+    return x_cops, x_cop_des, u_cops, x_robber, x_rob_des_list, u_robber, t
 
 def plot_x_and_u(x, u, t, name):
     plt.figure()

@@ -64,9 +64,11 @@ quad_robber = QuadrotorRobber(Q, R, Qf)
 # Random Initializations
 x0_cops = initial_states.cops_random(obstacles, y_min, y_max, z_min, z_max) # Random Cop Initializations
 x0_robber = initial_states.robber_random(x0_cops, obstacles, y_min, y_max, z_min, z_max) # Random Robber Initialization
+x0_robber_des = initial_states.init_robber_des(obstacles, y_min, y_max, z_min, z_max)
 
 # Simulate Quadrotors
-x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor_centralized(x0_cops, x0_robber, quadrotor_central, quad_robber, tf, num_cops, obstacles)
+x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor_centralized(x0_cops, x0_robber, quadrotor_central,
+                                                                                         quad_robber, tf, num_cops, obstacles, x0_robber_des)
 
 # Create Animation
 x_out = np.stack((x_cops[0], x_cops[1], x_cops[2], x_robber), axis=0)
