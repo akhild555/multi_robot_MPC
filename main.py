@@ -32,6 +32,8 @@ import create_animation
 importlib.reload(create_animation)
 from create_animation import create_animation
 
+from copy import copy
+
 # Bounds of Environment
 y_min = 0
 y_max = 7.5
@@ -43,7 +45,6 @@ ax = plt.axes()
 plt.close()
 environment = Map()  # Initialize Map Class
 obstacles = environment.map_3(ax) # Fixed
-obstacles_central = obstacles.copy()
 # obstacles = environment().map_4(ax, y_min, y_max, z_min, z_max) # Random
 
 # Weights of LQR cost
@@ -52,7 +53,7 @@ Q = np.diag([1, 1, 0, 1, 1, 1])
 Qf = Q
 
 # End time of the simulation
-tf = 0.1
+tf = 1
 
 # Number of Cop Quadrotors
 num_cops = 3
@@ -91,8 +92,13 @@ x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor(x0_
 x_out = np.stack(([c for c in x_cops] + [x_robber]), axis=0)
 # x_out = np.stack((x_cops[0], x_cops[1], x_cops[2], x_robber), axis=0)
 x_d_out = np.stack((x_cop_d, x_rob_d), axis=0)
-anim, fig2 = create_animation(x_out, x_d_out, t, obstacles, num_cops + 1)
-anim.save('distributed.mp4')
+anim, fig2 = create_animation(x_out, x_d_out, t, obstacles, num_cops + 1, title="Distributed")
+#anim.save('distributed.mp4')
+anim
+plt.show()
+#del anim
+#del fig2
+#del ax2
 
 # plt.show()
 # plt.close()
@@ -107,9 +113,10 @@ x_out_c = np.stack(([c for c in x_cops] + [x_robber]), axis=0)
 # x_out_c = np.stack((x_cops_c[0], x_cops_c[1], x_cops_c[2], x_robber_c), axis=0)
 x_d_out_c = np.stack((x_cop_d_c, x_rob_d_c), axis=0)
 # plt.close()
-anim_c, fig3 = create_animation(x_out_c, x_d_out_c, t_c, obstacles_central, num_cops + 1)
-anim_c.save('central.mp4')
-
+anim_c, fig3 = create_animation(x_out_c, x_d_out_c, t_c, obstacles, num_cops + 1, title = "Centralized")
+#anim_c.save('central.mp4')
+anim_c
+plt.show()
 # anim_c
 # plt.show()
 
@@ -117,3 +124,4 @@ anim_c.save('central.mp4')
 
 # anim
 # plt.show()
+print()

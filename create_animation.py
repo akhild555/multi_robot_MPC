@@ -7,8 +7,9 @@ import importlib
 import environment_manager
 importlib.reload(environment_manager)
 from environment_manager import Map
+from copy import copy
 
-def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames = 60):
+def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames = 60, title=""):
     # Sample desired trajectory
     #n_samples = 1000
     #t_samples = np.linspace(0.0, tf, n_samples)
@@ -37,7 +38,6 @@ def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames =
     # y_max = max(np.max(x_des[:, :, 1]), np.max(x[:, :, 1]))
     # y_min = min(np.min(x_des[:, :, 1]), np.min(x[:, :, 1]))
 
-    environment = Map() # Initialize Map Class
     # # Map 0: Straightway
     # y_max = 12
     # y_min = 0
@@ -110,7 +110,7 @@ def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames =
             # environment().map_1(ax) # Map 1
             # environment().map_2(ax) # Map 2
             # environment().map_3(ax) # Map 3
-            environment.map_plot(ax, obstacles) # Map Plot
+            map_plot(ax, obstacles) # Map Plot
 
             ax.plot(x_d_anim[key, i, 0], x_d_anim[key, i, 1], color+'*', label='desired position')
             ax.plot(x_anim[n, 0:i + 1, 0], x_anim[n, 0:i + 1, 1], color+'--', label='actual trajectory')
@@ -131,7 +131,14 @@ def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames =
         ax.set_aspect('equal')
         ax.legend(loc='upper left')
         ax.text(0.9, 0.02, "time: {:.2f}s".format(float(t_anim[i])), horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
+        ax.set_title(title)
 
         return ax
 
     return animation.FuncAnimation(fig, frame, interval=30, frames=n_frames, blit=False, repeat=True), fig
+
+# Plot Random Obstacles
+def map_plot(ax, obstacles):
+    # Plot Obstacles
+    for obs in obstacles:
+      ax.add_patch(copy(obs))
