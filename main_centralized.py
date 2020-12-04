@@ -62,8 +62,8 @@ quad_robber = QuadrotorRobber(Q, R, Qf)
 # x0_cops = initial_states.cops_fixed() # Fixed Cop Initializations
 # x0_robber = initial_states.robber_fixed() # Fixed Robber Initialization
 # Random Initializations
-x0_cops = initial_states.cops_random(obstacles, y_min, y_max, z_min, z_max) # Random Cop Initializations
-x0_robber = initial_states.robber_random(x0_cops, obstacles, y_min, y_max, z_min, z_max) # Random Robber Initialization
+x0_cops = initial_states.cops_random(obstacles, num_cops, y_min, y_max, z_min, z_max) # Random Cop Initializations
+x0_robber = initial_states.robber_random(x0_cops, obstacles, num_cops, y_min, y_max, z_min, z_max) # Random Robber Initialization
 x0_robber_des = initial_states.init_robber_des(obstacles, y_min, y_max, z_min, z_max)
 
 # Simulate Quadrotors
