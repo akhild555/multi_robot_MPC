@@ -59,7 +59,7 @@ def robber_sim(x_robber, quad_robber, x_des, dt, obstacles):
 
     return sol_rob.y[:, -1], current_u_cmd_robber
 
-def cop_sim(x_cops, quad_cops, x_des, xjs, dt, num_cops, obstacles):
+def cop_sim(x_cops, quad_cops, x_des, dt, num_cops, obstacles):
     # print(x_cops)
     # print(len(x_cops))
 
@@ -68,7 +68,7 @@ def cop_sim(x_cops, quad_cops, x_des, xjs, dt, num_cops, obstacles):
     for i in range(num_cops):
         current_x_cops.append([x_cops[i][-1]])
 
-    current_u_cmd_cops = quad_cops.compute_mpc_feedback(current_x_cops, x_des, xjs, obstacles) # Returns 3x2 array
+    current_u_cmd_cops = quad_cops.compute_mpc_feedback(current_x_cops, x_des, obstacles) # Returns 3x2 array
 
     current_u_cops_real = np.clip(current_u_cmd_cops, quad_cops.umin, quad_cops.umax)
 
@@ -124,7 +124,8 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
         u_cops.append([np.zeros((2,))])
 
     t = [t0]
-    eps = 1e-3
+    eps_y = 0.5
+    eps_z = 0.05
     eps_check = True
 
     while eps_check and t[-1] < tf:
@@ -150,22 +151,11 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
         x_robber.append(sol_rob)
         u_robber.append(u_cmd_rob)
 
-        xj_curr = []
-        for i in range(num_cops):
-            xj_curr.append(x_cops[i][-1])
-
-        # compute MPC for cops
-        for i in range(num_cops):
-            xjs = []
-            for j in range(num_cops):
-                if not i==j:
-                    xjs.append(xj_curr[j])
-        xjs = []
         # List of Each Cop's Desired State Vector
         x_cops_des = [[x_cop_des[-1]]]*num_cops # List of lists of arrays
         # a=x_cops_des[-3:] # Returns list of lists of arrays
         # x_cops list of lists of arrays
-        sol_cops, u_cmd_cops = cop_sim(x_cops, quad_cops, x_cops_des[-3:], xjs, dt, num_cops, obstacles)
+        sol_cops, u_cmd_cops = cop_sim(x_cops, quad_cops, x_cops_des[-3:], dt, num_cops, obstacles)
 
         for i in range(num_cops):
           x_cops_current[i] = x_cops[i][-1][0:2]
@@ -174,15 +164,15 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
 
         t.append(t[-1] + dt)
 
-        # calculate norms for all quads
-        norms = []
+        # determine if cops captured robber
         for i in range(num_cops):
-            norm = np.linalg.norm(np.array(x_cops[i][-1][0:2]) - x_cop_des[-1][0:2])
-            norms.append(norm)
-        eps_check = all(i > eps for i in norms)
+            y_dist = x_cops[i][-1][0] - x_cop_des[-1][0]
+            z_dist = x_cops[i][-1][1] - x_cop_des[-1][1]
+            # print("Distances for cop {}: y = {}, z = {}".format(i, y_dist, z_dist))
+            if eps_check:
+                eps_check = not (abs(y_dist) <= eps_y and abs(z_dist) <= eps_z)
 
         print("time: {}".format(t[-1])) # this
-        print("norms: {}".format(norms)) # this
         #print("cops: {}".format(x_cops[:][-1]))
         print("desired: {}\n".format(x_cop_des[-1])) #this
 

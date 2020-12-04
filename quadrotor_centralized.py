@@ -37,9 +37,12 @@ class QuadrotorCentralized(object):
 
     self.w_x = 1
     self.w_u = 1
-    self.w_j = 1
 
-    self.D = 0.5
+    self.w_y = 1
+    self.w_z = 1
+
+    self.D_y = 0.75
+    self.D_z = 0.2
 
     self.obstacle_margin = 0.5
 
@@ -158,15 +161,6 @@ class QuadrotorCentralized(object):
       prog.AddLinearConstraint(accel <= alpha_max)  # theta_ddot UB
       prog.AddLinearConstraint(accel >= alpha_min)  # theta_ddot LB
 
-    # pass
-
-  # def add_collision_constraint(self, x):
-  #
-  #   for i in range(x.shape[1]):
-  #     for j in range(i+1,x.shape[1]):
-  #       dist = (x[0][i] - x[1][j])**2
-  #       prog.AddConstraint(dist, D, np.inf, x )
-
   def add_obstacle_constraint(self, prog, x, x_des, N, obstacles):
     for i in range(N):
       y = x[i][0] + x_des[0]
@@ -188,22 +182,6 @@ class QuadrotorCentralized(object):
       prog.AddLinearEqualityConstraint((x[i+1])-val, np.zeros(len(x[i])))
     # pass
 
-  # def add_cost(self, prog, x, x_current, x_js, x_des, u, N):
-  #     # TODO: add cost.
-  #     expr = 0
-  #     # for x_j in x_js:
-  #     #     D_j = np.linalg.norm(x_current[:2] - x_j[:2])
-  #     #     if D_j < self.D:
-  #     #         expr += self.w_j*(D_j - self.D)**2
-  #
-  #     for i in range(N-1):
-  #         val1 = x[i].T @ self.Q @ x[i]
-  #         val2 = u[i].T @ self.R @ u[i]
-  #         expr += val1 + val2
-  #     expr += (x[N-1]-x_des).reshape(1, 6) @ self.Qf @ (x[N-1]-x_des).reshape(6, 1)
-  #     prog.AddQuadraticCost(expr[0,0])
-  #     pass
-
   # HW6 Cost
   def add_cost(self, prog, x_all, u_all, N):
     # TODO: add cost.
@@ -219,8 +197,21 @@ class QuadrotorCentralized(object):
       expr += (x_all[i][N - 1]).T @ self.Qf @ x_all[i][N - 1]
     prog.AddQuadraticCost(expr)
 
+  def add_collision_cost(self, prog, x_all, x_current, x_des, N):
+    for n in range(1, N):
+      for i in range(len(x_all)):
+        for j in range(len(x_all)):
+          if not i==j:
+            dist = (x_current[i][0][:2] - x_current[j][0][:2]) ** 2
+
+            if dist[0] < self.D_y ** 2 and dist[1] < self.D_z ** 2:
+              expr_y = (x_all[i][n][0] - x_all[j][n][0]) ** 2
+              expr_z = (x_all[i][n][1] - x_all[j][n][1]) ** 2
+
+              prog.AddQuadraticCost(self.w_y * (self.D_y ** 2 - expr_y) + self.w_z * (self.D_z ** 2 - expr_z))
+
   # def compute_mpc_feedback(self, x_current, x_js, x_des):
-  def compute_mpc_feedback(self, x_current, x_des, x_js, obstacles):
+  def compute_mpc_feedback(self, x_current, x_des, obstacles):
     '''
     This function computes the MPC controller input u
     '''
@@ -266,6 +257,7 @@ class QuadrotorCentralized(object):
       self.add_dynamics_constraint(prog, x_all[i], x_des[i][0], u_all[i], N, T)
     # Add Cost
     self.add_cost(prog, x_all, u_all, N)
+    self.add_collision_cost(prog, x_all, x_current, x_des, N)
     # Solve the QP
     solver = SnoptSolver()
     result = solver.Solve(prog)
