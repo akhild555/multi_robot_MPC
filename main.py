@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import importlib
 import matplotlib; matplotlib.use("TkAgg")
+import matplotlib.animation as animation
 
 # Import Simulator
 from quad_sim import simulate_quadrotor
@@ -40,9 +41,10 @@ z_max = 7.5
 # Map
 ax = plt.axes()
 plt.close()
-environment = Map  # Initialize Map Class
-# obstacles = environment().map_3(ax) # Fixed
-obstacles = environment().map_4(ax, y_min, y_max, z_min, z_max) # Random
+environment = Map()  # Initialize Map Class
+obstacles = environment.map_3(ax) # Fixed
+obstacles_central = obstacles.copy()
+# obstacles = environment().map_4(ax, y_min, y_max, z_min, z_max) # Random
 
 # Weights of LQR cost
 R = np.eye(2);
@@ -50,7 +52,7 @@ Q = np.diag([1, 1, 0, 1, 1, 1])
 Qf = Q
 
 # End time of the simulation
-tf = 5
+tf = 0.1
 
 # Number of Cop Quadrotors
 num_cops = 3
@@ -86,16 +88,14 @@ x0_robber_des = initial_states.init_robber_des(obstacles, y_min, y_max, z_min, z
 x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber,
                                                                              tf, num_cops, obstacles, x0_robber_des)
 # Create Animation
-x_out = x_cops[0]
-for i in range(1,num_cops):
-  x_out = np.stack((x_out, x_cops[i]), axis=0)
-x_out = np.stack((x_out, x_robber), axis=0)
+x_out = np.stack(([c for c in x_cops] + [x_robber]), axis=0)
 # x_out = np.stack((x_cops[0], x_cops[1], x_cops[2], x_robber), axis=0)
 x_d_out = np.stack((x_cop_d, x_rob_d), axis=0)
 anim, fig2 = create_animation(x_out, x_d_out, t, obstacles, num_cops + 1)
+anim.save('distributed.mp4')
 
-anim
-fig2.show()
+# plt.show()
+# plt.close()
 
 # Simulate Quadrotors
 # Centralized MPC
@@ -103,16 +103,15 @@ x_cops_c, x_cop_d_c, u_cops_c, x_robber_c, x_rob_d_c, u_robber_c, t_c = simulate
                                                                                          quad_robber, tf, num_cops, obstacles, x0_robber_des)
 
 # Create Animation
-x_out_c = x_cops_c[0]
-for i in range(1,num_cops):
-  x_out_c = np.stack((x_out_c, x_cops_c[i]), axis=0)
-x_out_c = np.stack((x_out_c, x_robber_c), axis=0)
+x_out_c = np.stack(([c for c in x_cops] + [x_robber]), axis=0)
 # x_out_c = np.stack((x_cops_c[0], x_cops_c[1], x_cops_c[2], x_robber_c), axis=0)
 x_d_out_c = np.stack((x_cop_d_c, x_rob_d_c), axis=0)
-anim_c, fig3 = create_animation(x_out_c, x_d_out_c, t_c, obstacles, num_cops + 1)
+# plt.close()
+anim_c, fig3 = create_animation(x_out_c, x_d_out_c, t_c, obstacles_central, num_cops + 1)
+anim_c.save('central.mp4')
 
-anim_c
-fig3.show()
+# anim_c
+# plt.show()
 
 
 

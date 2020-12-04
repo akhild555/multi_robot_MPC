@@ -23,8 +23,10 @@ def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames =
     tf = t[-1]
     n_frames = max(2, int(tf / (30 * dt)))
 
-    fig = plt.figure(figsize=(8,6))
-    ax = plt.axes()
+    # fig = plt.figure(figsize=(8,6))
+    fig, ax = plt.subplots()
+    # ax = plt.axes()
+    # ax = fig.axes()
     # print(x_des) this
     # print(x_des) this
     if n_agents == 1:
@@ -35,7 +37,7 @@ def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames =
     # y_max = max(np.max(x_des[:, :, 1]), np.max(x[:, :, 1]))
     # y_min = min(np.min(x_des[:, :, 1]), np.min(x[:, :, 1]))
 
-    environment = Map # Initialize Map Class
+    environment = Map() # Initialize Map Class
     # # Map 0: Straightway
     # y_max = 12
     # y_min = 0
@@ -108,7 +110,7 @@ def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames =
             # environment().map_1(ax) # Map 1
             # environment().map_2(ax) # Map 2
             # environment().map_3(ax) # Map 3
-            environment().map_plot(ax, obstacles) # Map Plot
+            environment.map_plot(ax, obstacles) # Map Plot
 
             ax.plot(x_d_anim[key, i, 0], x_d_anim[key, i, 1], color+'*', label='desired position')
             ax.plot(x_anim[n, 0:i + 1, 0], x_anim[n, 0:i + 1, 1], color+'--', label='actual trajectory')
