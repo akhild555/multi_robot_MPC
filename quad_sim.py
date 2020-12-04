@@ -4,6 +4,7 @@ from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 from quadrotor import Quadrotor
 import matplotlib.pyplot as plt
+import time
 
 def closest_cop(cop_positions, robber_position):
     # initialize
@@ -133,6 +134,8 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops,
     eps_z = 0.05
     eps_check = True
 
+    start = time.time()
+
     while eps_check and t[-1] < tf:
 
         # get position of closest cop
@@ -188,12 +191,14 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops,
         print("time: {}".format(t[-1]))
         # print("desired: {}\n".format(x_cop_des[-1]))
 
+    end = time.time()
+    t_elapsed = end - start
     x_cops = np.array(x_cops)
     x_cop_des = np.array(x_cop_des)
     u_cops = np.array(u_cops)
     x_rob_des_list = np.array(x_rob_des_list)
     t = np.array(t)
-    return x_cops, x_cop_des, u_cops, x_robber, x_rob_des_list, u_robber, t
+    return x_cops, x_cop_des, u_cops, x_robber, x_rob_des_list, u_robber, t, t_elapsed
 
 def plot_x_and_u(x, u, t, name):
     plt.figure()

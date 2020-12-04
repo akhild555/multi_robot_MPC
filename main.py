@@ -48,12 +48,12 @@ obstacles = environment.map_3(ax) # Fixed
 # obstacles = environment().map_4(ax, y_min, y_max, z_min, z_max) # Random
 
 # Weights of LQR cost
-R = np.eye(2);
+R = np.eye(2)
 Q = np.diag([1, 1, 0, 1, 1, 1])
 Qf = Q
 
 # End time of the simulation
-tf = 1
+tf = 25
 
 # Number of Cop Quadrotors
 num_cops = 3
@@ -86,7 +86,7 @@ x0_robber_des = initial_states.init_robber_des(obstacles, y_min, y_max, z_min, z
 
 # Simulate Quadrotors
 # Distributed MPC
-x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t = simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber,
+x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t, t_e = simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber,
                                                                              tf, num_cops, obstacles, x0_robber_des)
 # Create Animation
 x_out = np.stack(([c for c in x_cops] + [x_robber]), axis=0)
@@ -94,7 +94,7 @@ x_out = np.stack(([c for c in x_cops] + [x_robber]), axis=0)
 x_d_out = np.stack((x_cop_d, x_rob_d), axis=0)
 anim, fig2 = create_animation(x_out, x_d_out, t, obstacles, num_cops + 1, title="Distributed")
 #anim.save('distributed.mp4')
-anim
+#anim
 plt.show()
 #del anim
 #del fig2
@@ -105,22 +105,26 @@ plt.show()
 
 # Simulate Quadrotors
 # Centralized MPC
-x_cops_c, x_cop_d_c, u_cops_c, x_robber_c, x_rob_d_c, u_robber_c, t_c = simulate_quadrotor_centralized(x0_cops, x0_robber, quadrotor_central,
+x_cops_c, x_cop_d_c, u_cops_c, x_robber_c, x_rob_d_c, u_robber_c, t_c, t_e_c = simulate_quadrotor_centralized(x0_cops, x0_robber, quadrotor_central,
                                                                                          quad_robber, tf, num_cops, obstacles, x0_robber_des)
 
 # Create Animation
-x_out_c = np.stack(([c for c in x_cops] + [x_robber]), axis=0)
+x_out_c = np.stack(([c for c in x_cops_c] + [x_robber_c]), axis=0)
 # x_out_c = np.stack((x_cops_c[0], x_cops_c[1], x_cops_c[2], x_robber_c), axis=0)
 x_d_out_c = np.stack((x_cop_d_c, x_rob_d_c), axis=0)
+
+print("\nDistributed: t_f = {:.2f}, t_elapsed = {:.2f}".format(t[-1], t_e))
+print("Centralized: t_f = {:.2f}, t_elapsed = {:.2f}".format(t_c[-1], t_e_c))
+
 # plt.close()
 anim_c, fig3 = create_animation(x_out_c, x_d_out_c, t_c, obstacles, num_cops + 1, title = "Centralized")
 #anim_c.save('central.mp4')
-anim_c
+
+#anim_c
 plt.show()
+
 # anim_c
 # plt.show()
-
-
 
 # anim
 # plt.show()
