@@ -67,7 +67,7 @@ def cop_sim(x_cop, quad_cop, x_des, xjs, dt, obstacles):
 
     return sol_cop.y[:, -1], current_u_cmd_cop
 
-def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops, obstacles):
+def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops, obstacles, x0_rob_des):
     # Simulates a stabilized maneuver on the 2D quadrotor
     # system, with an initial value of x0
     t0 = 0.0
@@ -105,7 +105,7 @@ def simulate_quadrotor(x0_cops, x0_robber, quad_cops, quad_robber, tf, num_cops,
         close_cop = closest_cop(x_cops_current, x_robber[-1])
 
         # get desired robot position based on closest cop
-        x_rob_des.append(robber_desired_pos(close_cop, env_extents))
+        x_rob_des.append(x0_rob_des)
 
         # re-initialize current positions of all cops
         x_cops_current = np.zeros((num_cops, 2))

@@ -116,3 +116,26 @@ def robber_random(x0_cops, obstacles, y_min, y_max, z_min, z_max):
     d_r2 = np.linalg.norm(x0_robber - x2_0)
 
   return x0_robber
+
+def init_robber_des(obstacles, y_min, y_max, z_min, z_max):
+
+  margin = 0.5
+  x0_robber_des = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+  rob_des_found = False
+
+  while not rob_des_found:
+    x0_robber_des[0] = np.random.uniform(y_min, y_max)
+    x0_robber_des[1] = np.random.uniform(z_min, z_max)
+
+    for obs in obstacles:
+      obs_center = np.array(obs.center)
+      obs_radius = obs.radius
+      dist = np.linalg.norm(x0_robber_des[0:2] - obs_center)
+      if dist < obs_radius + margin:
+        rob_des_found = False
+        break
+      else:
+        rob_des_found = True
+
+
+  return x0_robber_des
