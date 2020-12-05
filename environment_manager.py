@@ -106,9 +106,7 @@ class Map(object):
                                circle_radius, facecolor=self.red))
       circle_center_z = circle_center_z + z_spacing_centered
 
-    # Plot Obstacles
-    for obs in circle_obs:
-      ax.add_patch(obs)
+    return circle_obs
 
   # Map 3: Small Symmetric Maze
   def map_3(self, ax):
@@ -193,7 +191,7 @@ class Map(object):
         circle_centers_y = np.random.uniform(y_min, y_max, num_obs)
         circle_centers_z = np.random.uniform(z_min, z_max, num_obs)
         # Randomly Generate Circle Radii
-        circle_radii = np.random.uniform(0, 2, num_obs)
+        circle_radii = np.random.uniform(0, 1.5, num_obs)
         circle_obs = []  # Store Obstacles Generated
         obs_safe_pos = []  # Store Safe Position Outside Obstacle
         dist_bw_obs = []  # Store Distance Between Obstacles

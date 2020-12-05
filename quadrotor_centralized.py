@@ -211,7 +211,7 @@ class QuadrotorCentralized(object):
               prog.AddQuadraticCost(self.w_y * (self.D_y ** 2 - expr_y) + self.w_z * (self.D_z ** 2 - expr_z))
 
   # def compute_mpc_feedback(self, x_current, x_js, x_des):
-  def compute_mpc_feedback(self, x_current, x_des, obstacles):
+  def compute_mpc_feedback(self, x_current, x_des, obstacles, num_cops):
     '''
     This function computes the MPC controller input u
     '''
@@ -223,28 +223,25 @@ class QuadrotorCentralized(object):
     # Initialize mathematical program and decalre decision variables
     prog = MathematicalProgram()
     # Initialize State Decision Variables for Cops
-    x_cop1 = np.zeros((N, 6), dtype="object")
-    x_cop2 = np.zeros((N, 6), dtype="object")
-    x_cop3 = np.zeros((N, 6), dtype="object")
+    x_all = []
+    for i in range(num_cops):
+      x_cop = np.zeros((N, 6), dtype="object")
+      x_all.append(x_cop)
     # Create State Decision Variables for Cops
-    for i in range(N):
-      x_cop1[i] = prog.NewContinuousVariables(6, "x_cop1_" + str(i))
-      x_cop2[i] = prog.NewContinuousVariables(6, "x_cop2_" + str(i))
-      x_cop3[i] = prog.NewContinuousVariables(6, "x_cop3_" + str(i))
-    # Initialize Input Decision Variables for Cops
-    u_cop1 = np.zeros((N-1, 2), dtype="object")
-    u_cop2 = np.zeros((N-1, 2), dtype="object")
-    u_cop3 = np.zeros((N-1, 2), dtype="object")
-    # Create Input Decision Variables for Cops
-    for i in range(N-1):
-      u_cop1[i] = prog.NewContinuousVariables(2, "u_cop1_" + str(i))
-      u_cop2[i] = prog.NewContinuousVariables(2, "u_cop2_" + str(i))
-      u_cop3[i] = prog.NewContinuousVariables(2, "u_cop3_" + str(i))
+    for i in range(num_cops):
+      for j in range(N):
+        x_all[i][j] = prog.NewContinuousVariables(6, "x_cop" + str(i) + "_" + str(j))
 
-    # Combine State Decision Variables
-    x_all = [x_cop1, x_cop2, x_cop3]
-    # Combine Input Decision Variables
-    u_all = [u_cop1, u_cop2, u_cop3]
+    # Initialize Input Decision Variables for Cops
+    u_all = []
+    for i in range(num_cops):
+      u_cop = np.zeros((N-1, 2), dtype="object")
+      u_all.append(u_cop)
+    # Create Input Decision Variables for Cops
+    for i in range(num_cops):
+      for j in range(N-1):
+        u_all[i][j] = prog.NewContinuousVariables(2, "u_cop" + str(i) + "_" + str(j))
+
     # Add constraints
     for i in range(len(x_all)):
       self.add_initial_state_constraint(prog, x_all[i], x_des[i][0], x_current[i][0])
@@ -262,15 +259,13 @@ class QuadrotorCentralized(object):
     solver = SnoptSolver()
     result = solver.Solve(prog)
 
-    u_mpc = np.zeros((3,2))
+    u_mpc = np.zeros((num_cops,2))
     # TODO: retrieve the controller input from the solution of the optimization problem
     # and use it to compute the MPC input u
     # You should make use of result.GetSolution(decision_var) where decision_var
     # is the variable you want
-    # a = result.GetSolution(u_all[0][0])
-    # print(result.GetSolution(u_all))
     for i in range(len(x_all)):
       u_mpc[i] = result.GetSolution(u_all[i][0]) + self.u_d(x_des[i][0])
-      # print(u_mpc)
+
 
     return u_mpc

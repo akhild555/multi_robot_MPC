@@ -67,9 +67,9 @@ def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames =
 
     # # Map 3: Symmetric Maze
     y_min = 0
-    y_max = 10
+    y_max = 40
     z_min = 0
-    z_max = 10  # 35
+    z_max = 20
     ax.set_xlim(y_min, y_max)
     ax.set_ylim(z_min, z_max)
     ax.set_aspect('equal')
@@ -106,11 +106,8 @@ def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames =
                 key = 0
                 color = 'g'
 
-            # environment().map_0(ax) # Map 0
-            # environment().map_1(ax) # Map 1
-            # environment().map_2(ax) # Map 2
-            # environment().map_3(ax) # Map 3
-            map_plot(ax, obstacles) # Map Plot
+            # Plot Obstacles
+            map_plot(ax, obstacles)
 
             if not key and n>0:
                 ax.plot(x_d_anim[key, i, 0], x_d_anim[key, i, 1], color + '*', label='_nolegend_')

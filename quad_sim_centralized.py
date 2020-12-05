@@ -84,7 +84,7 @@ def cop_sim(x_cops, quad_cops, x_des, dt, num_cops, obstacles):
     for i in range(num_cops):
         current_x_cops.append([x_cops[i][-1]])
 
-    current_u_cmd_cops = quad_cops.compute_mpc_feedback(current_x_cops, x_des, obstacles) # Returns 3x2 array
+    current_u_cmd_cops = quad_cops.compute_mpc_feedback(current_x_cops, x_des, obstacles, num_cops) # Returns 3x2 array
 
     current_u_cops_real = np.clip(current_u_cmd_cops, quad_cops.umin, quad_cops.umax)
 
@@ -176,7 +176,7 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
         x_cops_des = [[x_cop_des[-1]]]*num_cops # List of lists of arrays
         # a=x_cops_des[-3:] # Returns list of lists of arrays
         # x_cops list of lists of arrays
-        sol_cops, u_cmd_cops = cop_sim(x_cops, quad_cops, x_cops_des[-3:], dt, num_cops, obstacles)
+        sol_cops, u_cmd_cops = cop_sim(x_cops, quad_cops, x_cops_des[-num_cops:], dt, num_cops, obstacles)
 
         for i in range(num_cops):
           x_cops_current[i] = x_cops[i][-1][0:2]

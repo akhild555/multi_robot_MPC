@@ -14,7 +14,7 @@ import quadrotor
 import quadrotor_centralized
 import quadrotor_robber
 
-#Reload Modules to Use Latest Code
+# Reload Modules to Use Latest Code
 importlib.reload(quadrotor)
 importlib.reload(quadrotor_centralized)
 importlib.reload(quadrotor_robber)
@@ -32,20 +32,19 @@ import create_animation
 importlib.reload(create_animation)
 from create_animation import create_animation
 
-from copy import copy
-
 # Bounds of Environment
 y_min = 0
-y_max = 7.5
+y_max = 40
 z_min = 0
-z_max = 7.5
+z_max = 20
 
 # Map
 ax = plt.axes()
 plt.close()
 environment = Map()  # Initialize Map Class
 obstacles = environment.map_3(ax) # Fixed
-# obstacles = environment().map_4(ax, y_min, y_max, z_min, z_max) # Random
+# obstacles = environment.map_4(ax, y_min, y_max, z_min, z_max) # Random
+# obstacles = environment.map_5(ax) # Fixed Maze
 
 # Weights of LQR cost
 R = np.eye(2)
@@ -53,17 +52,12 @@ Q = np.diag([1, 1, 0, 1, 1, 1])
 Qf = Q
 
 # End time of the simulation
-tf = 25
+tf = 30
 
 # Number of Cop Quadrotors
 num_cops = 3
 
 # Construct Cop Quadrotor Controllers
-# quadrotor0 = Quadrotor(Q, R, Qf)
-# quadrotor1 = Quadrotor(Q, R, Qf)
-# quadrotor2 = Quadrotor(Q, R, Qf)
-# quad_cops = [quadrotor0, quadrotor1, quadrotor2]
-
 # Distributed MPC Quadrotor Objects
 quad_cops = []
 for i in range(num_cops):
@@ -77,7 +71,7 @@ quad_robber = QuadrotorRobber(Q, R, Qf)
 
 # Initial States of Quadrotors
 # Fixed Initializations
-# x0_cops = initial_states.cops_fixed() # Fixed Cop Initializations
+# x0_cops = initial_states.cops_fixed(num_cops) # Fixed Cop Initializations
 # x0_robber = initial_states.robber_fixed() # Fixed Robber Initialization
 # Random Initializations
 x0_cops = initial_states.cops_random(obstacles, num_cops, y_min, y_max, z_min, z_max) # Random Cop Initializations
@@ -90,18 +84,11 @@ x_cops, x_cop_d, u_cops, x_robber, x_rob_d, u_robber, t, t_e = simulate_quadroto
                                                                              tf, num_cops, obstacles, x0_robber_des)
 # Create Animation
 x_out = np.stack(([c for c in x_cops] + [x_robber]), axis=0)
-# x_out = np.stack((x_cops[0], x_cops[1], x_cops[2], x_robber), axis=0)
 x_d_out = np.stack((x_cop_d, x_rob_d), axis=0)
 anim, fig2 = create_animation(x_out, x_d_out, t, obstacles, num_cops + 1, title="Distributed")
-#anim.save('distributed.mp4')
-#anim
+# writervideo = animation.FFMpegWriter(fps=5)
+# anim.save('distributed.mp4',writer=writervideo)
 plt.show()
-#del anim
-#del fig2
-#del ax2
-
-# plt.show()
-# plt.close()
 
 # Simulate Quadrotors
 # Centralized MPC
@@ -110,22 +97,14 @@ x_cops_c, x_cop_d_c, u_cops_c, x_robber_c, x_rob_d_c, u_robber_c, t_c, t_e_c = s
 
 # Create Animation
 x_out_c = np.stack(([c for c in x_cops_c] + [x_robber_c]), axis=0)
-# x_out_c = np.stack((x_cops_c[0], x_cops_c[1], x_cops_c[2], x_robber_c), axis=0)
 x_d_out_c = np.stack((x_cop_d_c, x_rob_d_c), axis=0)
 
 print("\nDistributed: t_f = {:.2f}, t_elapsed = {:.2f}".format(t[-1], t_e))
 print("Centralized: t_f = {:.2f}, t_elapsed = {:.2f}".format(t_c[-1], t_e_c))
 
-# plt.close()
-anim_c, fig3 = create_animation(x_out_c, x_d_out_c, t_c, obstacles, num_cops + 1, title = "Centralized")
-#anim_c.save('central.mp4')
 
-#anim_c
+anim_c, fig3 = create_animation(x_out_c, x_d_out_c, t_c, obstacles, num_cops + 1, title = "Centralized")
+# anim_c.save('central.mp4',writer=writervideo)
 plt.show()
 
-# anim_c
-# plt.show()
-
-# anim
-# plt.show()
 print()

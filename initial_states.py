@@ -1,13 +1,19 @@
 import numpy as np
 from numpy.linalg import norm
 
-def cops_fixed():
+def cops_fixed(num_cops):
 
   x0_0 = np.array([3, 0.5, 0, 0, 0, 0]) # Cop 0
   x1_0 = np.array([3, 0.75, 0, 0, 0, 0]) # Cop 1
   x2_0 = np.array([0, 1, 0, 0, 0, 0]) # Cop 2
-  # x3_0 = np.array([-2.5, 1, 0, 1, 1, 0]) # Cop 3
-  x0_cops = [x0_0, x1_0, x2_0]
+  x3_0 = np.array([-2.5, 1, 0, 1, 1, 0]) # Cop 3
+  x4_0 = np.array([2, 1, 0, 0, 0, 0]) # Cop 4
+  x_all_cops = [x0_0, x1_0, x2_0, x3_0, x4_0] # Combine Cops
+
+  x0_cops =[] # Initialize Output
+  # Gather Initial States
+  for i in range(num_cops):
+    x0_cops.append(x_all_cops[i])
 
   return x0_cops
 
@@ -18,7 +24,6 @@ def robber_fixed():
   return x0_robber
 
 # Random Initial States of Cops
-# def cops_random(obstacles, y_min, y_max, z_min, z_max):
 def cops_random(obstacles, num_cops, y_min, y_max, z_min, z_max):
 
   # Initialize Distances
