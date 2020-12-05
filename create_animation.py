@@ -112,8 +112,15 @@ def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames =
             # environment().map_3(ax) # Map 3
             map_plot(ax, obstacles) # Map Plot
 
-            ax.plot(x_d_anim[key, i, 0], x_d_anim[key, i, 1], color+'*', label='desired position')
-            ax.plot(x_anim[n, 0:i + 1, 0], x_anim[n, 0:i + 1, 1], color+'--', label='actual trajectory')
+            if not key and n>0:
+                ax.plot(x_d_anim[key, i, 0], x_d_anim[key, i, 1], color + '*', label='_nolegend_')
+                ax.plot(x_anim[n, 0:i + 1, 0], x_anim[n, 0:i + 1, 1], color + '--', label='_nolegend_')
+            elif not key:
+                ax.plot(x_d_anim[key, i, 0], x_d_anim[key, i, 1], color+'*', label='cop desired position')
+                ax.plot(x_anim[n, 0:i + 1, 0], x_anim[n, 0:i + 1, 1], color+'--', label='cop actual trajectory')
+            else:
+                ax.plot(x_d_anim[key, i, 0], x_d_anim[key, i, 1], color+'*', label='robber desired position')
+                ax.plot(x_anim[n, 0:i + 1, 0], x_anim[n, 0:i + 1, 1], color+'--', label='robber actual trajectory')
 
             # plot=ax.scatter(x_anim[i, 0], x_anim[i, 1], c='r', label='quadrotor position')
             ax.plot([y[n, i] + a*cos(theta[n, i]), y[n, i] - a*cos(theta[n, i])],
@@ -135,7 +142,7 @@ def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames =
 
         return ax
 
-    return animation.FuncAnimation(fig, frame, interval=30, frames=n_frames, blit=False, repeat=True), fig
+    return animation.FuncAnimation(fig, frame, interval=1000/30, frames=n_frames, blit=False, repeat=True), fig
 
 # Plot Random Obstacles
 def map_plot(ax, obstacles):
