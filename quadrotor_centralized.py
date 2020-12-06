@@ -35,14 +35,18 @@ class QuadrotorCentralized(object):
     self.n_x = 6
     self.n_u = 2
 
+    # MPC cost weights
     self.w_x = 1
     self.w_u = 1
 
-    self.w_y = 1
-    self.w_z = 1
+    # Collision cost weights (max cost 1)
+    self.w_y = 1.33
+    self.w_z = 5
 
     self.D_y = 0.75
     self.D_z = 0.2
+
+    self.obstacle_margin = 0.5
 
     self.obstacle_margin = 0.5
 
@@ -205,8 +209,8 @@ class QuadrotorCentralized(object):
             dist = (x_current[i][0][:2] - x_current[j][0][:2]) ** 2
 
             if dist[0] < self.D_y ** 2 and dist[1] < self.D_z ** 2:
-              expr_y = (x_all[i][n][0] - x_all[j][n][0]) ** 2
-              expr_z = (x_all[i][n][1] - x_all[j][n][1]) ** 2
+              expr_y = (x_all[i][n][0] - x_current[j][n][0] + x_des[0]) ** 2
+              expr_z = (x_all[i][n][1] - x_current[j][n][1] + x_des[1]) ** 2
 
               prog.AddQuadraticCost(self.w_y * (self.D_y ** 2 - expr_y) + self.w_z * (self.D_z ** 2 - expr_z))
 
