@@ -41,10 +41,10 @@ class QuadrotorCentralized(object):
 
     # Collision cost weights (max cost 1)
     self.w_y = 1.33
-    self.w_z = 5
+    self.w_z = 2.5
 
     self.D_y = 0.75
-    self.D_z = 0.2
+    self.D_z = 0.4
 
     self.obstacle_margin = 0.5
 
@@ -212,7 +212,7 @@ class QuadrotorCentralized(object):
               expr_y = (x_all[i][n][0] - x_current[j][0][0] + x_des[i][0][0]) ** 2
               expr_z = (x_all[i][n][1] - x_current[j][0][1] + x_des[i][0][1]) ** 2
 
-              prog.AddQuadraticCost(self.w_y * (self.D_y ** 2 - expr_y) + self.w_z * (self.D_z ** 2 - expr_z))
+              prog.AddQuadraticCost(self.w_y * (self.D_y**2 - expr_y) + self.w_z * (self.D_z**2 - expr_z))
 
   # def compute_mpc_feedback(self, x_current, x_js, x_des):
   def compute_mpc_feedback(self, x_current, x_des, obstacles, num_cops):
