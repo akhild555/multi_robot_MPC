@@ -37,9 +37,13 @@ class QuadrotorRobber(object):
 
     self.w_x = 1
     self.w_u = 1
-    self.w_j = 1
 
-    self.D = 0.5
+    # Collision cost weights (max cost 2)
+    self.w_y = 1.33
+    self.w_z = 2.5
+
+    self.D_y = 1.5
+    self.D_z = 0.8
 
     self.obstacle_margin = 0.5
 
@@ -181,23 +185,6 @@ class QuadrotorRobber(object):
       prog.AddLinearEqualityConstraint((x[i+1])-val, np.zeros(len(x[i])))
     # pass
 
-
-  # def add_cost(self, prog, x, x_js, x_des, u, N):
-  #     # TODO: add cost.
-  #     expr = 0
-  #     for x_j in x_js:
-  #         D_j = np.linalg.norm(x[0] - x_j)
-  #         if D_j < self.D:
-  #             expr += self.w_j*(D_j - self.D)**2
-  #
-  #     for i in range(N-1):
-  #         val1 = x[i].T @ self.Q @ x[i]
-  #         val2 = u[i].T @ self.R @ u[i]
-  #         expr += val1 + val2
-  #     expr += (x[N-1]-x_des).T @ self.Qf @ (x[N-1]-x_des)
-  #     prog.AddQuadraticCost(-expr)
-  #     pass
-
   # Find Closest Cop and Maximize Distance to It
   # def add_cost(self, prog, x, x_js, x_des, u, N):
   #     # TODO: add cost.
@@ -232,8 +219,22 @@ class QuadrotorRobber(object):
     expr += (x[N - 1]).T @ self.Qf @ x[N - 1]
     prog.AddQuadraticCost(expr)
 
+  def add_collision_cost(self, prog, x, x_current, x_js, x_des, N):
+    for i in range(1, N):
+      for x_j in x_js:
+        dist = (x_current[:2] - x_j[:2]) ** 2
+
+        #curr_tar_dist = sum(x_current[:2] - x_des[:2] ** 2)
+        #j_tar_dist = sum(x_j[:2] - x_des[:2] ** 2)
+
+        if dist[0] < self.D_y ** 2 and dist[1] < self.D_z ** 2:
+          expr_y = (x[i][0] - x_j[0] + x_des[0]) ** 2
+          expr_z = (x[i][1] - x_j[1] + x_des[1]) ** 2
+
+          prog.AddQuadraticCost(self.w_y * (self.D_y**2 - expr_y) + self.w_z * (self.D_z**2 - expr_z))
+
   # def compute_mpc_feedback(self, x_current, x_js, x_des):
-  def compute_mpc_feedback(self, x_current, x_des, obstacles):
+  def compute_mpc_feedback(self, x_current, x_des, x_js, obstacles):
     '''
     This function computes the MPC controller input u
     '''
@@ -262,6 +263,7 @@ class QuadrotorRobber(object):
     self.add_dynamics_constraint(prog, x, x_des, u, N, T)
     # self.add_cost(prog, x, x_js, x_des, u, N)
     self.add_cost(prog, x, u, N)
+    self.add_collision_cost(prog, x, x_current, x_js, x_des, N)
 
     # Solve the QP
     solver = SnoptSolver()
