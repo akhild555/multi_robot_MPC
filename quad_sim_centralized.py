@@ -59,11 +59,16 @@ def robber_desired_pos(x_rob_des, furthest_point, obstacles):
 
     return new_x_rob_des
 
-def robber_sim(x_robber, quad_robber, x_des, dt, obstacles):
+def robber_sim(x_robber, quad_robber, x_des, x_cops, dt, num_cops, obstacles):
 
     current_x_robber = x_robber[-1]
+    current_x_cops = []
 
-    current_u_cmd_robber = quad_robber.compute_mpc_feedback(current_x_robber, x_des, obstacles)
+    for i in range(num_cops):
+        current_x_cops.append(x_cops[i][-1])
+
+
+    current_u_cmd_robber = quad_robber.compute_mpc_feedback(current_x_robber, x_des, current_x_cops, obstacles)
     current_u_robber_real = np.clip(current_u_cmd_robber, quad_robber.umin, quad_robber.umax)
 
     # Autonomous ODE for constant inputs to work with solve_ivp
@@ -168,7 +173,7 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
         x_cop_des.append(np.array([x_robber[-1][0], x_robber[-1][1], 0, 0, 0, 0]))
 
         # Compute MPC for robber
-        sol_rob, u_cmd_rob = robber_sim(x_robber, quad_robber, x_rob_des_list[-1], dt, obstacles)
+        sol_rob, u_cmd_rob = robber_sim(x_robber, quad_robber, x_rob_des_list[-1], x_cops, dt, num_cops, obstacles)
         x_robber.append(sol_rob)
         u_robber.append(u_cmd_rob)
 
@@ -193,7 +198,7 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
             if eps_check:
                 eps_check = not (abs(y_dist) <= eps_y and abs(z_dist) <= eps_z)
 
-        print("time: {}".format(t[-1])) # this
+        print("time: {:.2f}".format(t[-1])) # this
         #print("cops: {}".format(x_cops[:][-1]))
         print("desired: {}\n".format(x_cop_des[-1])) #this
 
