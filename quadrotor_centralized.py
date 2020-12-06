@@ -209,8 +209,8 @@ class QuadrotorCentralized(object):
             dist = (x_current[i][0][:2] - x_current[j][0][:2]) ** 2
 
             if dist[0] < self.D_y ** 2 and dist[1] < self.D_z ** 2:
-              expr_y = (x_all[i][n][0] - x_current[j][n][0] + x_des[0]) ** 2
-              expr_z = (x_all[i][n][1] - x_current[j][n][1] + x_des[1]) ** 2
+              expr_y = (x_all[i][n][0] - x_current[j][0][0] + x_des[0]) ** 2
+              expr_z = (x_all[i][n][1] - x_current[j][0][1] + x_des[1]) ** 2
 
               prog.AddQuadraticCost(self.w_y * (self.D_y ** 2 - expr_y) + self.w_z * (self.D_z ** 2 - expr_z))
 
