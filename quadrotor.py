@@ -35,11 +35,13 @@ class Quadrotor(object):
     self.n_x = 6
     self.n_u = 2
 
+    # MPC cost weights
     self.w_x = 1
     self.w_u = 1
 
-    self.w_y = 1
-    self.w_z = 1
+    # Collision cost weights (max cost 1)
+    self.w_y = 1.33
+    self.w_z = 5
 
     self.D_y = 0.75
     self.D_z = 0.2
