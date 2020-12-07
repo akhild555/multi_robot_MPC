@@ -121,7 +121,7 @@ def create_animation(x, x_des, t, obstacles, n_agents = 1, dt = 0.01, n_frames =
 
             # plot=ax.scatter(x_anim[i, 0], x_anim[i, 1], c='r', label='quadrotor position')
             ax.plot([y[n, i] + a*cos(theta[n, i]), y[n, i] - a*cos(theta[n, i])],
-                           [z[n, i] + a*sin(theta[n, i]), z[n, i] - a*sin(theta[n, i])] , color, 'LineWidtheeta',3)
+                           [z[n, i] + a*sin(theta[n, i]), z[n, i] - a*sin(theta[n, i])] , color, linewidth=1)
 
             # if(np.abs((x_max - x_min) - (y_max - y_min)) < 5):
             #     ax.set_xlim(x_min - x_padding, x_max + x_padding)

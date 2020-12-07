@@ -255,7 +255,7 @@ class Map(object):
 
     return circle_obs
 
-  # Sparse Maze, Large Obstacles
+  # Sparse Maze, Small Obstacles
   def map_6(self):
     circle_init_y = 1.5
     circle_init_z = 1.5
