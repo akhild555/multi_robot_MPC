@@ -119,10 +119,10 @@ def simulate_quadrotor_centralized(x0_cops, x0_robber, quad_cops, quad_robber, t
     dt = 1e-2
 
     # rectangle corners of environment
-    env_extents = np.array([[-2, -2],
-                            [10, 10],
-                            [-2, 10],
-                            [10, -2]])
+    env_extents = np.array([[0, 0],
+                            [40, 0],
+                            [0, 20],
+                            [40, 20]])
 
     # robber setup
     x_robber = [x0_robber]

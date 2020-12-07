@@ -56,7 +56,7 @@ Q = np.diag([1, 1, 0, 1, 1, 1])
 Qf = Q
 
 # End time of the simulation
-tf = 30
+tf = 300
 
 # Number of Cop Quadrotors
 num_cops = 5
