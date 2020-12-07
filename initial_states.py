@@ -3,11 +3,24 @@ from numpy.linalg import norm
 
 def cops_fixed(num_cops):
 
-  x0_0 = np.array([3, 0.5, 0, 0, 0, 0]) # Cop 0
-  x1_0 = np.array([3, 0.75, 0, 0, 0, 0]) # Cop 1
-  x2_0 = np.array([0, 1, 0, 0, 0, 0]) # Cop 2
-  x3_0 = np.array([-2.5, 1, 0, 1, 1, 0]) # Cop 3
-  x4_0 = np.array([2, 1, 0, 0, 0, 0]) # Cop 4
+  # # Map 5
+  # x0_0 = np.array([0, 3.5, 0, 0, 0, 0]) # Cop 0
+  # x1_0 = np.array([0, 7.5, 0, 0, 0, 0]) # Cop 1
+  # x2_0 = np.array([3.5, 1.5, 0, 0, 0, 0]) # Cop 2
+  # x3_0 = np.array([3.5, 5.5, 0, 0, 0, 0]) # Cop 3
+  # x4_0 = np.array([3.5, 9.5, 0, 0, 0, 0]) # Cop 4
+  # Map 6, 7
+  x0_0 = np.array([0, 5.5, 0, 0, 0, 0]) # Cop 0
+  x1_0 = np.array([0, 13.5, 0, 0, 0, 0]) # Cop 1
+  x2_0 = np.array([9.5, 1.5, 0, 0, 0, 0]) # Cop 2
+  x3_0 = np.array([9.5, 9.5, 0, 0, 0, 0]) # Cop 3
+  x4_0 = np.array([9.5, 17.5, 0, 0, 0, 0]) # Cop 4
+  # Map 8, 9
+  # x0_0 = np.array([0, 3.5, 0, 0, 0, 0]) # Cop 0
+  # x1_0 = np.array([0, 7.5, 0, 0, 0, 0]) # Cop 1
+  # x2_0 = np.array([0, 11.5, 0, 0, 0, 0]) # Cop 2
+  # x3_0 = np.array([6.5, 3.5, 0, 0, 0, 0]) # Cop 3
+  # x4_0 = np.array([6.5, 11.5, 0, 0, 0, 0]) # Cop 4
   x_all_cops = [x0_0, x1_0, x2_0, x3_0, x4_0] # Combine Cops
 
   x0_cops =[] # Initialize Output
@@ -19,7 +32,12 @@ def cops_fixed(num_cops):
 
 def robber_fixed():
 
-  x0_robber = np.array([-3.5, 1, 0, 0, 0, 0])
+  # Map 5
+  # x0_robber = np.array([7.5, 5.5, 0.0, 0.0, 0.0, 0.0])
+  # Map 6, 7
+  x0_robber = np.array([17.5, 13.5, 0.0, 0.0, 0.0, 0.0])
+  # Map 8, 9
+  # x0_robber = np.array([10.5, 7.5, 0.0, 0.0, 0.0, 0.0])
 
   return x0_robber
 
@@ -149,5 +167,15 @@ def init_robber_des(obstacles, y_min, y_max, z_min, z_max):
       else:
         rob_des_found = True
 
+  return x0_robber_des
+
+def init_fixed_robber_des():
+
+  # Map 5
+  # x0_robber_des = np.array([11.5, 5.5, 0.0, 0.0, 0.0, 0.0])
+  # Map 6, 7
+  x0_robber_des = np.array([21.5, 13.5, 0.0, 0.0, 0.0, 0.0])
+  # Map 8, 9
+  # x0_robber_des = np.array([15.0, 7.5, 0.0, 0.0, 0.0, 0.0])
 
   return x0_robber_des

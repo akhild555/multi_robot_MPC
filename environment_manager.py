@@ -109,7 +109,7 @@ class Map(object):
     return circle_obs
 
   # Map 3: Small Symmetric Maze
-  def map_3(self, ax):
+  def map_3(self):
     circle_init_y = 1.5
     circle_init_z = 1.5
     z_spacing_centered = 3 # For Centered Obstacles
@@ -151,16 +151,13 @@ class Map(object):
       #                          circle_radius, facecolor=self.red))
       circle_center_z = circle_center_z + z_spacing_centered
     print("Generated Obstacles")
-    # # Plot Obstacles
-    # for obs in circle_obs:
-    #   ax.add_patch(obs)
 
     return circle_obs
 
   # Map 4: Random Small Symmetric Maze
   def map_4(self, ax, y_min, y_max, z_min, z_max):
     # Choose Number of Obstacles
-    num_obs = 4
+    num_obs = 5
     # Randomly Generate Circle Center
     circle_centers_y = np.random.uniform(y_min, y_max, num_obs)
     circle_centers_z = np.random.uniform(z_min, z_max, num_obs)
@@ -214,17 +211,264 @@ class Map(object):
 
     return circle_obs
 
-  # Generate Random Obstacles with Possible Overlap
-  # def map_5(self, ax, y_min, y_max, z_min, z_max):
-  #   num_obs = 4
-  #   circle_centers_y = np.random.uniform(y_min, y_max, num_obs)
-  #   circle_centers_z = np.random.uniform(z_min, z_max, num_obs)
-  #   circle_radii = np.random.uniform(0, 2, num_obs)
-  #
-  #   circle_obs = []
-  #   # Create Obstacles
-  #   for i in range(num_obs):
-  #     circle_obs.append(Circle((circle_centers_y[i], circle_centers_z[i]), circle_radii[i], facecolor=self.blue))
+  # Dense Maze
+  def map_5(self):
+    circle_init_y = 1.5
+    circle_init_z = 1.5
+    y_spacing_centered = 4  # For Centered Obstacles
+    y_spacing_offset = 2  # For Offset Obstacles
+    row_2 = 4  # Distance From 1st Row of Obs
+    row_3 = 8  # Distance From 1st Row of Obs
+    z_spacing_r = 2
+    circle_radius = 0.25
+    # Initialize Starting Obstacles
+    circle_obs = [Circle((circle_init_y, circle_init_z), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_2), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_3), circle_radius, facecolor=self.blue)]
+    circle_center_y = circle_init_y
+    circle_center_z = circle_init_z
+    # Generate List of All Obstacles
+    for i in range(10):
+      # Create Centered Obstacles
+      # 1st Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z),
+                               circle_radius, facecolor=self.blue))
+      # 2nd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z + row_2),
+                               circle_radius, facecolor=self.blue))
+      # 3rd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z + row_3),
+                               circle_radius, facecolor=self.blue))
+      # Create Offset Obstacles
+      # Right of 1st Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_offset, circle_center_z + z_spacing_r),
+                               circle_radius, facecolor=self.red))
+      # Right of 2nd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_offset, circle_center_z + row_2 + z_spacing_r),
+                               circle_radius, facecolor=self.red))
+      # Right of 3rd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_offset, circle_center_z + row_3 + z_spacing_r),
+                               circle_radius, facecolor=self.red))
+      circle_center_y = circle_center_y + y_spacing_centered
 
-  #   return circle_obs
+    print("Generated Obstacles")
+
+    return circle_obs
+
+  # Sparse Maze, Large Obstacles
+  def map_6(self):
+    circle_init_y = 1.5
+    circle_init_z = 1.5
+    y_spacing_centered = 16  # For Centered Obstacles
+    y_spacing_offset = 8  # For Offset Obstacles
+    row_2 = 8  # Distance From 1st Row of Obs
+    row_3 = 16  # Distance From 1st Row of Obs
+    z_spacing_r = 4
+    circle_radius = 0.5
+    # Initialize Starting Obstacles
+    circle_obs = [Circle((circle_init_y, circle_init_z), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_2), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_3), circle_radius, facecolor=self.blue)]
+    circle_center_y = circle_init_y
+    circle_center_z = circle_init_z
+    # Generate List of All Obstacles
+    for i in range(3):
+      # Create Centered Obstacles
+      # 1st Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z),
+                               circle_radius, facecolor=self.blue))
+      # 2nd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z + row_2),
+                               circle_radius, facecolor=self.blue))
+      # 3rd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z + row_3),
+                               circle_radius, facecolor=self.blue))
+      # Create Offset Obstacles
+      # Right of 1st Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_offset, circle_center_z + z_spacing_r),
+                               circle_radius, facecolor=self.red))
+      # Right of 2nd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_offset, circle_center_z + row_2 + z_spacing_r),
+                               circle_radius, facecolor=self.red))
+      # Right of 3rd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_offset, circle_center_z + row_3 + z_spacing_r),
+                               circle_radius, facecolor=self.red))
+
+      circle_center_y = circle_center_y + y_spacing_centered
+
+    print("Generated Obstacles")
+
+    return circle_obs
+
+  # Sparse Maze, Large Obstacles
+  def map_7(self):
+    circle_init_y = 1.5
+    circle_init_z = 1.5
+    y_spacing_centered = 20  # For Centered Obstacles, 16
+    y_spacing_offset = 10  # For Offset Obstacles, 8
+    row_2 = 8  # Distance From 1st Row of Obs
+    row_3 = 16  # Distance From 1st Row of Obs
+    z_spacing_r = 4
+    circle_radius = 2
+    # Initialize Starting Obstacles
+    circle_obs = [Circle((circle_init_y, circle_init_z), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_2), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_3), circle_radius, facecolor=self.blue)]
+    circle_center_y = circle_init_y
+    circle_center_z = circle_init_z
+    # Generate List of All Obstacles
+    for i in range(3):
+      # Create Centered Obstacles
+      # 1st Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z),
+                               circle_radius, facecolor=self.blue))
+      # 2nd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z + row_2),
+                               circle_radius, facecolor=self.blue))
+      # 3rd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z + row_3),
+                               circle_radius, facecolor=self.blue))
+      # Create Offset Obstacles
+      # Right of 1st Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_offset, circle_center_z + z_spacing_r),
+                               circle_radius, facecolor=self.red))
+      # Right of 2nd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_offset, circle_center_z + row_2 + z_spacing_r),
+                               circle_radius, facecolor=self.red))
+      # Right of 3rd Row
+      circle_obs.append(Circle((circle_center_y + y_spacing_offset, circle_center_z + row_3 + z_spacing_r),
+                               circle_radius, facecolor=self.red))
+
+      circle_center_y = circle_center_y + y_spacing_centered
+
+    print("Generated Obstacles")
+
+    return circle_obs
+
+  # City Blocks
+  def map_8(self):
+    circle_init_y = 1.5
+    circle_init_z = 1.5
+    y_spacing_centered = 8  # For Centered Obstacles
+    row_2 = 4  # Distance From 1st Row of Obs
+    row_3 = 8  # Distance From 1st Row of Obs
+    row_4 = 12  # Distance From 1st Row of Obs
+    circle_radius = 1
+    # Initialize Starting Obstacles
+    circle_obs = [Circle((circle_init_y, circle_init_z), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_2), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_3), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_4), circle_radius, facecolor=self.blue)]
+    circle_center_y = circle_init_y
+    circle_center_z = circle_init_z
+    # Generate List of All Obstacles
+    for i in range(4):
+      # Create Centered Obstacles
+      # 1st Row, 1st Col
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z),
+                               circle_radius, facecolor=self.blue))
+      # 2nd Row, 1st Col
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z + row_2),
+                               circle_radius, facecolor=self.blue))
+      # 3rd Row, 1st Col
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z + row_3),
+                               circle_radius, facecolor=self.blue))
+      # 4th Row, 1st Col
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z + row_4),
+                               circle_radius, facecolor=self.blue))
+      circle_center_y = circle_center_y + y_spacing_centered
+
+    circle_center_y = circle_init_y
+    for i in range(5):
+      # 1st Row, 2nd Col
+      circle_obs.append(Circle((circle_center_y + circle_radius, circle_center_z),
+                               circle_radius, facecolor=self.blue))
+      # 2nd Row, 2nd Col
+      circle_obs.append(Circle((circle_center_y + circle_radius, circle_center_z + row_2),
+                               circle_radius, facecolor=self.blue))
+      # 3rd Row, 2nd Col
+      circle_obs.append(Circle((circle_center_y + circle_radius, circle_center_z + row_3),
+                               circle_radius, facecolor=self.blue))
+      # 4th Row, 2nd Col
+      circle_obs.append(Circle((circle_center_y + circle_radius, circle_center_z + row_4),
+                               circle_radius, facecolor=self.blue))
+      # 1st Row, 3rd Col
+      circle_obs.append(Circle((circle_center_y + 2*circle_radius, circle_center_z),
+                               circle_radius, facecolor=self.blue))
+      # 2nd Row, 3rd Col
+      circle_obs.append(Circle((circle_center_y + 2*circle_radius, circle_center_z + row_2),
+                               circle_radius, facecolor=self.blue))
+      # 3rd Row, 3rd Col
+      circle_obs.append(Circle((circle_center_y + 2*circle_radius, circle_center_z + row_3),
+                               circle_radius, facecolor=self.blue))
+      # 4th Row, 3rd Col
+      circle_obs.append(Circle((circle_center_y + 2*circle_radius, circle_center_z + row_4),
+                               circle_radius, facecolor=self.blue))
+
+      circle_center_y = circle_center_y + y_spacing_centered
+
+
+    print("Generated Obstacles")
+
+    return circle_obs
+
+  # City Blocks
+  def map_9(self):
+    circle_init_y = 1.5
+    circle_init_z = 1.5
+    y_spacing_centered = 8  # For Centered Obstacles
+    row_2 = 4  # Distance From 1st Row of Obs
+    row_3 = 8  # Distance From 1st Row of Obs
+    row_4 = 12 # Distance From 1st Row of Obs
+    circle_radius = 1
+    # Initialize Starting Obstacles
+    circle_obs = [Circle((circle_init_y, circle_init_z), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_2), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_3), circle_radius, facecolor=self.blue),
+                  Circle((circle_init_y, circle_init_z + row_4), circle_radius, facecolor=self.blue)]
+    circle_center_y = circle_init_y
+    circle_center_z = circle_init_z
+    # Generate List of All Obstacles
+    for i in range(20):
+      # Create Centered Obstacles
+      # 1st Row, 1st Col
+      circle_obs.append(Circle((circle_center_y + 2*circle_radius, circle_center_z),
+                               circle_radius, facecolor=self.blue))
+      # 4th Row, 1st Col
+      circle_obs.append(Circle((circle_center_y + 2*circle_radius, circle_center_z + row_4),
+                               circle_radius, facecolor=self.blue))
+      circle_center_y = circle_center_y + 2*circle_radius
+
+    circle_center_y = circle_init_y
+    for i in range(4):
+      # Create Centered Obstacles
+      # 2nd Row, 1st Col
+      circle_obs.append(Circle((circle_center_y + y_spacing_centered, circle_center_z + row_2),
+                               circle_radius, facecolor=self.blue))
+      # 3rd Row, 1st Col
+      circle_obs.append(Circle((circle_center_y + + y_spacing_centered, circle_center_z + row_3),
+                               circle_radius, facecolor=self.blue))
+      circle_center_y = circle_center_y + y_spacing_centered
+
+    circle_center_y = circle_init_y
+    for i in range(5):
+      # 2nd Row, 2nd Col
+      circle_obs.append(Circle((circle_center_y + circle_radius, circle_center_z + row_2),
+                               circle_radius, facecolor=self.blue))
+      # 2nd Row, 3rd Col
+      circle_obs.append(Circle((circle_center_y + 2*circle_radius, circle_center_z + row_2),
+                               circle_radius, facecolor=self.blue))
+      # 3rd Row, 2nd Col
+      circle_obs.append(Circle((circle_center_y + circle_radius, circle_center_z + row_3),
+                               circle_radius, facecolor=self.blue))
+      # 3rd Row, 3rd Col
+      circle_obs.append(Circle((circle_center_y + 2*circle_radius, circle_center_z + row_3),
+                               circle_radius, facecolor=self.blue))
+
+      circle_center_y = circle_center_y + y_spacing_centered
+
+
+    print("Generated Obstacles")
+
+    return circle_obs
 

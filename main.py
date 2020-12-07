@@ -42,9 +42,13 @@ z_max = 20
 ax = plt.axes()
 plt.close()
 environment = Map()  # Initialize Map Class
-obstacles = environment.map_3(ax) # Fixed
+# obstacles = environment.map_3() # Fixed
 # obstacles = environment.map_4(ax, y_min, y_max, z_min, z_max) # Random
-# obstacles = environment.map_5(ax) # Fixed Maze
+# obstacles = environment.map_5() # Fixed Dense Maze
+obstacles = environment.map_6() # Fixed Sparse, Small Obstacle Maze
+# obstacles = environment.map_7() # Fixed Sparse, Large Obstacle Maze
+# obstacles = environment.map_8() # City Blocks, Gaps
+# obstacles = environment.map_9() # City Blocks, Solid Walls
 
 # Weights of LQR cost
 R = np.eye(2)
@@ -55,7 +59,7 @@ Qf = Q
 tf = 30
 
 # Number of Cop Quadrotors
-num_cops = 3
+num_cops = 5
 
 # Construct Cop Quadrotor Controllers
 # Distributed MPC Quadrotor Objects
@@ -71,12 +75,13 @@ quad_robber = QuadrotorRobber(Q, R, Qf)
 
 # Initial States of Quadrotors
 # Fixed Initializations
-# x0_cops = initial_states.cops_fixed(num_cops) # Fixed Cop Initializations
-# x0_robber = initial_states.robber_fixed() # Fixed Robber Initialization
+x0_cops = initial_states.cops_fixed(num_cops) # Fixed Cop Initializations
+x0_robber = initial_states.robber_fixed() # Fixed Robber Initialization
+x0_robber_des = initial_states.init_fixed_robber_des() # Fixed Robber Desired Initialization
 # Random Initializations
-x0_cops = initial_states.cops_random(obstacles, num_cops, y_min, y_max, z_min, z_max) # Random Cop Initializations
-x0_robber = initial_states.robber_random(x0_cops, obstacles, num_cops, y_min, y_max, z_min, z_max) # Random Robber Initialization
-x0_robber_des = initial_states.init_robber_des(obstacles, y_min, y_max, z_min, z_max)
+# x0_cops = initial_states.cops_random(obstacles, num_cops, y_min, y_max, z_min, z_max) # Random Cop Initializations
+# x0_robber = initial_states.robber_random(x0_cops, obstacles, num_cops, y_min, y_max, z_min, z_max) # Random Robber Initialization
+# x0_robber_des = initial_states.init_robber_des(obstacles, y_min, y_max, z_min, z_max)
 
 # Simulate Quadrotors
 # Distributed MPC
